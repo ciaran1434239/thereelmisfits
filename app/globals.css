@@ -1,0 +1,167 @@
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-bg text-ink font-sans;
+  }
+
+  ::selection {
+    background-color: #C8201F;
+    color: #ffffff;
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #0D0D0D, 0 0 0 4px #C8201F;
+  }
+
+  ::placeholder {
+    color: #4A4A4A;
+  }
+
+  button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+@layer components {
+  /* Video thumbnail hover */
+  .video-thumb {
+    @apply relative overflow-hidden rounded-xl transition-transform;
+  }
+
+  .video-thumb:hover .video-thumb-play {
+    @apply opacity-100;
+  }
+
+  .video-thumb-play {
+    @apply absolute inset-0 flex items-center justify-center bg-black/35 opacity-0 transition-opacity duration-200;
+  }
+
+  /* ── Film card — used everywhere a portrait poster appears ── */
+  .film-card {
+    @apply relative overflow-hidden rounded-md cursor-pointer;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+
+  .film-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+  }
+
+  /* ── Score badge — solid fills, white text ── */
+  .score-badge {
+    @apply absolute top-2 right-2 px-2 py-0.5 rounded text-white text-xs font-extrabold;
+    letter-spacing: 0.02em;
+  }
+
+  .score-badge-red    { background-color: #C8201F; }
+  .score-badge-amber  { background-color: #D97706; }
+  .score-badge-green  { background-color: #16A34A; }
+  .score-badge-unscored {
+    background-color: rgba(255, 255, 255, 0.10);
+    @apply text-white/50;
+  }
+
+  /* ── Section header system ── */
+  .section-eyebrow {
+    @apply block text-red font-bold uppercase;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+  }
+
+  .section-title {
+    @apply text-ink font-bold leading-tight;
+    font-size: 1.6rem;
+    letter-spacing: -0.01em;
+  }
+
+  .section-title-light {
+    @apply text-white font-bold leading-tight;
+    font-size: 1.6rem;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Dark island — Battle of the Critics wrapper ── */
+  .dark-island {
+    background-color: #111111;
+    border-top: 3px solid #C8201F;
+    border-bottom: 3px solid #C8201F;
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2 rounded font-bold text-white text-sm;
+    background-color: #C8201F;
+    transition: background-color 150ms ease;
+  }
+  .btn-primary:hover { background-color: #A01818; }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2 rounded font-bold text-sm;
+    background-color: transparent;
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    transition: background-color 150ms ease, border-color 150ms ease;
+  }
+  .btn-ghost:hover {
+    background-color: #C8201F;
+    border-color: #C8201F;
+  }
+
+  .btn-ghost-dark {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2 rounded font-bold text-sm;
+    background-color: transparent;
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    transition: background-color 150ms ease, border-color 150ms ease;
+  }
+  .btn-ghost-dark:hover {
+    background-color: #C8201F;
+    border-color: #C8201F;
+  }
+
+  /* ── Stats strip ── */
+  .stats-strip {
+    background-color: #1A1A1A;
+    border-bottom: 3px solid #C8201F;
+  }
+
+  /* ── By The Numbers section background ── */
+  .by-the-numbers-bg {
+    background-color: #111111;
+  }
+}
+
+/* ── Float-up animation for Battle of the Critics voting ── */
+@keyframes float-up {
+  0%   { transform: translate(-50%, -50%) scale(1);     opacity: 1; }
+  60%  { transform: translate(-50%, -80px) scale(1.4);  opacity: 0.7; }
+  100% { transform: translate(-50%, -120px) scale(0.8); opacity: 0; }
+}
+
+.animate-float-up {
+  animation: float-up 600ms ease-out forwards;
+  pointer-events: none;
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
