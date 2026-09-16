@@ -26,18 +26,18 @@ export function SectionHeading({
     <div className="flex items-end justify-between mb-5">
       <div>
         {label && (
-          <p className="text-[0.65rem] font-[700] uppercase tracking-[0.12em] text-[#C8201F] mb-1.5">
+          <p className="text-[12px] font-[700] uppercase tracking-[0.12em] mb-1.5" style={{ color: 'var(--ink-muted)', fontFamily: 'var(--font-editorial, serif)' }}>
             {label}
           </p>
         )}
-        <h2 className="text-[1.6rem] sm:text-[2rem] font-black uppercase tracking-tight leading-none text-white">
+        <h2 className="font-black uppercase leading-[0.95] text-white" style={{ fontSize: 'clamp(2rem, 3.5vw, 3.5rem)', letterSpacing: '-0.025em' }}>
           {title}
         </h2>
       </div>
       {viewAllHref && (
         <Link
           href={viewAllHref as any}
-          className={`text-[11px] font-bold transition-colors shrink-0 ml-4 pb-0.5 ${dark ? 'text-white/40 hover:text-white' : 'text-[#C8201F] hover:opacity-70'}`}
+          className="btn-secondary shrink-0 ml-4"
         >
           {viewAllLabel} →
         </Link>

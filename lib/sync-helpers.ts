@@ -101,7 +101,8 @@ Mark "isReview": false for everything else — including:
 - Videos that mention "${contentTitle}" but are really about a broader topic
 
 Score/recommend: only set these if the description contains an explicit verdict or numeric score. Otherwise use "score": 0, "recommend": null — the transcript backfill handles the rest.
-If a score IS present, ALWAYS normalize to a 0–10 scale before deciding recommend: "4 out of 5" = 8.0 (×2), "3.5 stars" = 7.0, "8/10" = 8.0. Score ≥ 6 → recommend: true. Score < 6 → recommend: false.
+If a score IS present, ALWAYS normalize to a 0–10 scale before deciding recommend: "4 out of 5" = 8.0 (×2), "3.5 stars" = 7.0, "8/10" = 8.0. Score ≥ 5 → recommend: true. Score < 5 → recommend: false.
+Lukewarm positives are still positives: "I liked it but didn't love it", "it was good but not great", "worth a watch", "solid film", "I enjoyed it" = recommend: true. Only mark recommend: false when the reviewer is actively discouraging the audience from watching.
 CRITICAL — handle double negatives correctly: "I don't see how this doesn't end up in my top films" = positive. Resolve the full logical meaning before scoring.
 
 Return ONLY valid JSON: {"isReview": boolean, "score": number, "recommend": boolean | null, "snippet": string | null}`,

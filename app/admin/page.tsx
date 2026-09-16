@@ -1089,326 +1089,114 @@ function ManualAddTab({ creators }: { creators: Creator[] }) {
   );
 }
 
-// ── Gaming Tab ────────────────────────────────────────────────────────────────
+// ── Sync & Backfill Tab ───────────────────────────────────────────────────────
 
-interface GameEntry {
-  id: number;
-  title: string;
-  cover_image_id: string | null;
-  review_count: number;
-  created_at: string;
-}
+function SyncTab() {
+  const [running, setRunning] = useState<string | null>(null);
+  const [result, setResult] = useState<string | null>(null);
 
-function GamingTab() {
-  const [creators, setCreators] = useState<Creator[]>([]);
-  const [games, setGames] = useState<GameEntry[]>([]);
-  const [loadingGames, setLoadingGames] = useState(true);
-  const [handle, setHandle] = useState('');
-  const [addStatus, setAddStatus] = useState('');
-  const [adding, setAdding] = useState(false);
-  const [channelAction, setChannelAction] = useState<Record<string, 'syncing' | 'wiping'>>({});
-  const [channelStatus, setChannelStatus] = useState<Record<string, string>>({});
-  const [syncStatus, setSyncStatus] = useState('');
-  const [syncing, setSyncing] = useState<string | null>(null);
-  const [deletingGame, setDeletingGame] = useState<number | null>(null);
-
-  async function load() {
-    const [creatorsRes, gamesRes] = await Promise.all([
-      fetch('/api/admin/creators'),
-      fetch('/api/admin/games'),
-    ]);
-    const creatorsData = await creatorsRes.json();
-    const gamesData = await gamesRes.json();
-    const all: Creator[] = Array.isArray(creatorsData) ? creatorsData : [];
-    setCreators(all.filter(c => c.content_types?.includes('gaming')));
-    setGames(gamesData.games ?? []);
-    setLoadingGames(false);
-  }
-
-  useEffect(() => { load(); }, []);
-
-  async function addGamingCreator(e: React.FormEvent) {
-    e.preventDefault();
-    if (!handle.trim()) return;
-    setAdding(true);
-    setAddStatus('Looking up channel...');
-    const res = await fetch('/api/admin/creators', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ handle: handle.trim(), contentTypes: ['gaming'] }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setAddStatus(`✓ Added: ${data.name}`);
-      setHandle('');
-      load();
-    } else {
-      setAddStatus(`✗ ${data.error}`);
-    }
-    setAdding(false);
-  }
-
-  async function syncChannel(creatorId: string, creatorName: string) {
-    setChannelAction(prev => ({ ...prev, [creatorId]: 'syncing' }));
-    setChannelStatus(prev => ({ ...prev, [creatorId]: 'Syncing...' }));
+  async function run(label: string, url: string, method = 'GET') {
+    setRunning(label);
+    setResult(null);
     try {
-      const res = await fetch(`/api/deep-sync?creator=${encodeURIComponent(creatorId)}`);
+      const res = await fetch(url, { method });
       const data = await res.json();
-      setChannelStatus(prev => ({
-        ...prev,
-        [creatorId]: `+${data.added ?? 0} games/reviews added`,
-      }));
+      setResult(JSON.stringify(data, null, 2));
     } catch (e: any) {
-      setChannelStatus(prev => ({ ...prev, [creatorId]: `Error: ${e.message}` }));
+      setResult(`Error: ${e.message}`);
     }
-    setChannelAction(prev => { const n = { ...prev }; delete n[creatorId]; return n; });
-    load();
+    setRunning(null);
   }
 
-  async function wipeChannel(creatorId: string, creatorName: string) {
-    if (!confirm(`Delete all reviews for ${creatorName}? This cannot be undone.`)) return;
-    setChannelAction(prev => ({ ...prev, [creatorId]: 'wiping' }));
-    setChannelStatus(prev => ({ ...prev, [creatorId]: 'Wiping...' }));
-    try {
-      const res = await fetch('/api/admin/wipe-channel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ creator_id: creatorId }),
-      });
-      const data = await res.json();
-      setChannelStatus(prev => ({ ...prev, [creatorId]: `Deleted ${data.deleted ?? 0} reviews` }));
-      load();
-    } catch (e: any) {
-      setChannelStatus(prev => ({ ...prev, [creatorId]: `Error: ${e.message}` }));
-    }
-    setChannelAction(prev => { const n = { ...prev }; delete n[creatorId]; return n; });
-  }
-
-  async function removeCreator(creator: Creator) {
-    if (!confirm(`Remove ${creator.name} and all their reviews?`)) return;
-    await fetch('/api/admin/creators', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: creator.id }),
-    });
-    load();
-  }
-
-  async function runSync(label: string, url: string) {
-    setSyncing(label);
-    setSyncStatus(`Running ${label}...`);
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      setSyncStatus(JSON.stringify(data, null, 2));
-      load();
-    } catch (e: any) {
-      setSyncStatus(`Error: ${e.message}`);
-    }
-    setSyncing(null);
-  }
-
-  async function deleteGame(id: number, title: string) {
-    if (!confirm(`Delete "${title}" and all its reviews? Cannot be undone.`)) return;
-    setDeletingGame(id);
-    await fetch('/api/admin/games', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    setGames(prev => prev.filter(g => g.id !== id));
-    setDeletingGame(null);
-  }
-
-  const totalGameReviews = games.reduce((s, g) => s + g.review_count, 0);
+  const busy = running !== null;
 
   return (
-    <div>
-      {/* ── Sync controls ── */}
-      <div className="bg-surface border border-[#2A2A2A] rounded-xl p-6 mb-6 shadow-sm">
-        <h2 className="text-sm font-black uppercase tracking-widest mb-4">Sync Gaming Channels</h2>
+    <div className="max-w-2xl flex flex-col gap-6">
+
+      {/* Step 1 — Sync */}
+      <div className="bg-surface border border-[#2A2A2A] rounded-xl p-6 shadow-sm">
+        <h2 className="text-sm font-black uppercase tracking-widest text-white mb-1">1 — Sync New Reviews</h2>
+        <p className="text-[11px] text-white/40 font-bold mb-5">
+          Pulls new videos from every channel and classifies them. Run roughly every 5 days.
+        </p>
         <div className="flex flex-wrap gap-3">
           <button
-            onClick={() => runSync('Sync24h', '/api/deep-sync?since=24')}
-            disabled={syncing !== null}
-            className="bg-[#E21D1D] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
+            onClick={() => run('sync5d', '/api/deep-sync?since=120')}
+            disabled={busy}
+            className="bg-[#E21D1D] text-white text-xs font-black uppercase tracking-widest px-5 py-2.5 rounded-lg hover:bg-red-700 disabled:opacity-50"
           >
-            {syncing === 'Sync24h' ? 'Syncing…' : '⚡ Sync All (24h)'}
+            {running === 'sync5d' ? 'Syncing…' : '⚡ Sync (last 5 days)'}
           </button>
           <button
-            onClick={() => runSync('Sync48h', '/api/deep-sync?since=48')}
-            disabled={syncing !== null}
-            className="bg-[#E21D1D]/80 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-red-800 disabled:opacity-50"
+            onClick={() => run('sync24h', '/api/deep-sync?since=24')}
+            disabled={busy}
+            className="bg-[#333] text-white text-xs font-black uppercase tracking-widest px-5 py-2.5 rounded-lg hover:bg-[#444] disabled:opacity-50"
           >
-            {syncing === 'Sync48h' ? 'Syncing…' : '⚡ Sync All (48h)'}
+            {running === 'sync24h' ? 'Syncing…' : 'Sync (last 24h)'}
           </button>
           <button
-            onClick={() => { if (confirm('Full scan checks every video — takes several minutes. Continue?')) runSync('SyncFull', '/api/deep-sync'); }}
-            disabled={syncing !== null}
-            className="bg-amber-600 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-amber-700 disabled:opacity-50"
+            onClick={() => { if (confirm('Full scan checks every video ever posted — takes several minutes. Continue?')) run('syncFull', '/api/deep-sync'); }}
+            disabled={busy}
+            className="bg-[#333] text-white text-xs font-black uppercase tracking-widest px-5 py-2.5 rounded-lg hover:bg-[#444] disabled:opacity-50"
           >
-            {syncing === 'SyncFull' ? 'Scanning…' : '🔍 Full Scan'}
+            {running === 'syncFull' ? 'Scanning…' : '🔍 Full Scan (all time)'}
           </button>
         </div>
-        {syncStatus && (
-          <pre className="mt-4 text-xs font-mono bg-[#0A0A0A] border border-[#2A2A2A] rounded p-3 overflow-x-auto whitespace-pre-wrap text-white/60">
-            {syncStatus}
-          </pre>
-        )}
       </div>
 
-      {/* ── Add gaming creator ── */}
-      <div className="bg-surface border border-[#2A2A2A] rounded-xl p-6 mb-6 shadow-sm">
-        <h2 className="text-sm font-black uppercase tracking-widest mb-1">Add Gaming Channel</h2>
-        <p className="text-[11px] text-white/40 font-bold mb-4">
-          Creators added here are tagged as <code className="bg-[#222] px-1 rounded">gaming</code> — the AI will pick up their game reviews automatically during sync.
+      {/* Step 2 — Backfill */}
+      <div className="bg-surface border border-[#2A2A2A] rounded-xl p-6 shadow-sm">
+        <h2 className="text-sm font-black uppercase tracking-widest text-white mb-1">2 — Backfill Snippets & Verdicts</h2>
+        <p className="text-[11px] text-white/40 font-bold mb-5">
+          Reads transcripts for reviews missing a quote or verdict. Run this after syncing.
         </p>
-        <form onSubmit={addGamingCreator} className="flex gap-3">
-          <input
-            value={handle}
-            onChange={e => setHandle(e.target.value)}
-            placeholder="YouTube handle (e.g. skillup or @SkillUpYT)"
-            className="flex-1 border border-[#333333] rounded-lg px-4 py-2 text-sm font-medium focus:outline-none focus:border-[#E21D1D] bg-surface-alt text-white"
-          />
+        <div className="flex flex-wrap gap-3">
           <button
-            type="submit"
-            disabled={adding}
-            className="bg-[#E21D1D] text-white text-sm font-black uppercase tracking-widest px-6 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
+            onClick={() => run('backfill', '/api/backfill')}
+            disabled={busy}
+            className="bg-[#E21D1D] text-white text-xs font-black uppercase tracking-widest px-5 py-2.5 rounded-lg hover:bg-red-700 disabled:opacity-50"
           >
-            {adding ? '...' : 'Add'}
+            {running === 'backfill' ? 'Running…' : '⚡ Backfill Snippets'}
           </button>
-        </form>
-        {addStatus && (
-          <p className={`mt-3 text-sm font-bold ${addStatus.startsWith('✓') ? 'text-emerald-500' : addStatus.startsWith('✗') ? 'text-red-500' : 'text-white/50'}`}>
-            {addStatus}
-          </p>
-        )}
+          <button
+            onClick={() => run('backfillForce', '/api/backfill?force=true')}
+            disabled={busy}
+            className="bg-[#333] text-white text-xs font-black uppercase tracking-widest px-5 py-2.5 rounded-lg hover:bg-[#444] disabled:opacity-50"
+          >
+            {running === 'backfillForce' ? 'Running…' : 'Re-process All'}
+          </button>
+        </div>
+        <p className="text-[10px] text-white/25 font-bold mt-3">
+          "Re-process All" re-runs the AI on every review — use this after updating scoring rules.
+        </p>
       </div>
 
-      {/* ── Gaming creators list ── */}
-      <div className="bg-surface border border-[#2A2A2A] rounded-xl overflow-hidden shadow-sm mb-8">
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-[#2A2A2A]">
-          <div className="h-2 w-2 rounded-full bg-[#E21D1D]" />
-          <h2 className="text-sm font-black uppercase tracking-widest">
-            Gaming Channels ({creators.length})
-          </h2>
+      {/* Misc */}
+      <div className="bg-surface border border-[#2A2A2A] rounded-xl p-6 shadow-sm">
+        <h2 className="text-sm font-black uppercase tracking-widest text-white mb-4">Other</h2>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => run('refreshAvatars', '/api/admin/refresh-avatars')}
+            disabled={busy}
+            className="bg-[#333] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-[#444] disabled:opacity-50"
+          >
+            {running === 'refreshAvatars' ? 'Running…' : 'Refresh Avatars'}
+          </button>
+          <button
+            onClick={() => run('cleanup', '/api/admin/cleanup', 'POST')}
+            disabled={busy}
+            className="bg-[#333] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-[#444] disabled:opacity-50"
+          >
+            {running === 'cleanup' ? 'Cleaning…' : 'Clean Bad Reviews'}
+          </button>
         </div>
-        {creators.length === 0 ? (
-          <p className="text-sm text-white/40 font-bold py-10 text-center">
-            No gaming channels yet — add one above
-          </p>
-        ) : (
-          <div className="flex flex-col divide-y divide-[#2A2A2A]">
-            {creators.map(creator => {
-              const busy = channelAction[creator.id];
-              const result = channelStatus[creator.id];
-              return (
-                <div key={creator.id}>
-                  <div className="flex items-center gap-4 px-6 py-4">
-                    <img
-                      src={creator.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(creator.name)}&background=1a1a2e&color=fff&size=80`}
-                      alt={creator.name}
-                      className="w-10 h-10 rounded-full object-cover shrink-0"
-                      onError={(e) => { const img = e.target as HTMLImageElement; img.onerror = null; img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(creator.name)}&background=1a1a2e&color=fff&size=80`; }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-black text-white text-sm">{creator.name}</p>
-                      <p className="text-[11px] text-white/40 font-bold uppercase tracking-widest">@{creator.handle} · 🎮 gaming</p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() => syncChannel(creator.id, creator.name)}
-                        disabled={!!busy}
-                        className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded border border-blue-200 text-blue-500 hover:bg-blue-50/10 disabled:opacity-40 transition-colors"
-                      >
-                        {busy === 'syncing' ? 'Syncing...' : 'Deep Sync'}
-                      </button>
-                      <button
-                        onClick={() => wipeChannel(creator.id, creator.name)}
-                        disabled={!!busy}
-                        className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded border border-[#2A2A2A] text-white/30 hover:text-red-500 hover:border-red-200 disabled:opacity-40 transition-colors"
-                      >
-                        {busy === 'wiping' ? 'Wiping...' : 'Wipe'}
-                      </button>
-                      <button
-                        onClick={() => removeCreator(creator)}
-                        disabled={!!busy}
-                        className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded border border-[#2A2A2A] text-white/30 hover:text-red-500 hover:border-red-200 disabled:opacity-40 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                  {result && (
-                    <p className={`px-6 pb-3 text-[11px] font-bold ${result.startsWith('Error') ? 'text-red-500' : 'text-emerald-500'}`}>
-                      {result}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
 
-      {/* ── Games database ── */}
-      <div className="bg-surface border border-[#2A2A2A] rounded-xl overflow-hidden shadow-sm">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#2A2A2A]">
-          <div className="flex items-center gap-3">
-            <div className="h-2 w-2 rounded-full bg-[#E21D1D]" />
-            <h2 className="text-sm font-black uppercase tracking-widest">
-              Games Database ({games.length} games · {totalGameReviews} reviews)
-            </h2>
-          </div>
-        </div>
-        {loadingGames ? (
-          <p className="text-sm text-white/40 font-bold py-10 text-center">Loading...</p>
-        ) : games.length === 0 ? (
-          <p className="text-sm text-white/40 font-bold py-10 text-center">
-            No games synced yet — add a gaming channel and run a sync
-          </p>
-        ) : (
-          <div className="flex flex-col divide-y divide-[#2A2A2A]">
-            {games.map(game => (
-              <div key={game.id} className="flex items-center gap-4 px-6 py-3 hover:bg-[#181818] group">
-                {game.cover_image_id ? (
-                  <img
-                    src={`https://images.igdb.com/igdb/image/upload/t_cover_small/${game.cover_image_id}.jpg`}
-                    alt={game.title}
-                    className="w-8 h-11 object-cover rounded shrink-0"
-                  />
-                ) : (
-                  <div className="w-8 h-11 rounded bg-[#222] shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-black text-white truncate">{game.title}</p>
-                  <p className="text-[11px] text-white/40 font-bold">IGDB #{game.id}</p>
-                </div>
-                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${
-                  game.review_count >= 4 ? 'bg-emerald-900/50 text-emerald-400' : 'bg-[#222] text-white/40'
-                }`}>
-                  {game.review_count} {game.review_count === 1 ? 'review' : 'reviews'}
-                </span>
-                <a
-                  href={`/game/${game.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[10px] font-black uppercase tracking-widest text-white/30 hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
-                >
-                  View →
-                </a>
-                <button
-                  onClick={() => deleteGame(game.id, game.title)}
-                  disabled={deletingGame === game.id}
-                  className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 shrink-0 disabled:opacity-40"
-                >
-                  {deletingGame === game.id ? '...' : 'Delete'}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {result && (
+        <pre className="text-xs font-mono bg-[#0A0A0A] border border-[#2A2A2A] rounded-xl p-4 overflow-x-auto whitespace-pre-wrap text-white/60">
+          {result}
+        </pre>
+      )}
     </div>
   );
 }
@@ -1867,7 +1655,7 @@ function ReviewHealthTab({ creators }: { creators: Creator[] }) {
 // ── Main Admin Page ───────────────────────────────────────────────────────────
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<'channels' | 'pending' | 'reviews' | 'add' | 'gaming' | 'lists' | 'boxoffice' | 'health'>('channels');
+  const [tab, setTab] = useState<'channels' | 'pending' | 'reviews' | 'add' | 'sync' | 'lists' | 'boxoffice' | 'health'>('pending');
   const [creators, setCreators] = useState<Creator[]>([]);
   const [handle, setHandle] = useState('');
   const [status, setStatus] = useState('');
@@ -2027,14 +1815,14 @@ export default function AdminPage() {
       {/* Tab bar */}
       <div className="flex gap-1 mb-8 border-b border-[#2A2A2A]">
         {([
-          { key: 'channels', label: 'Channels', accent: "border-white" },
-          { key: 'pending', label: 'Pending Reviews', accent: 'border-[#E21D1D]' },
-          { key: 'reviews', label: 'All Reviews', accent: 'border-[#E21D1D]' },
-          { key: 'add', label: '+ Add Review', accent: 'border-emerald-500' },
-          { key: 'gaming', label: '🎮 Gaming', accent: 'border-blue-500' },
-          { key: 'lists', label: '📋 Lists', accent: 'border-purple-500' },
-          { key: 'boxoffice', label: '🎬 Box Office', accent: 'border-blue-500' },
-          { key: 'health', label: '🩺 Review Health', accent: 'border-amber-500' },
+          { key: 'pending', label: 'Score Reviews', accent: 'border-[#E21D1D]' },
+          { key: 'sync', label: 'Sync & Backfill', accent: 'border-emerald-500' },
+          { key: 'reviews', label: 'All Reviews', accent: 'border-white/40' },
+          { key: 'add', label: '+ Add Review', accent: 'border-white/40' },
+          { key: 'channels', label: 'Channels', accent: 'border-white/40' },
+          { key: 'lists', label: '📋 Lists', accent: 'border-white/40' },
+          { key: 'boxoffice', label: '🎬 Box Office', accent: 'border-white/40' },
+          { key: 'health', label: '🩺 Health', accent: 'border-amber-500' },
         ] as const).map(({ key, label, accent }) => (
           <button
             key={key}
@@ -2055,48 +1843,15 @@ export default function AdminPage() {
         <>
           <p className="text-sm text-white/40 font-bold uppercase tracking-widest mb-8">{creators.length} channels</p>
 
-          <div className="bg-surface border border-[#2A2A2A] rounded-xl p-6 mb-6 shadow-sm">
-            <h2 className="text-sm font-black uppercase tracking-widest mb-4">Maintenance</h2>
-            <div className="flex flex-wrap gap-3">
-              <button onClick={() => runAction('Sync', '/api/sync')} disabled={actionLoading !== null}
-                className="bg-[#111] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50">
-                {actionLoading === 'Sync' ? 'Syncing...' : 'Quick Sync'}
-              </button>
-              <button onClick={() => runAction('Sync24h', '/api/deep-sync?since=24')} disabled={actionLoading !== null}
-                className="bg-[#E21D1D] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-surface/90 disabled:opacity-50">
-                {actionLoading === 'Sync24h' ? 'Syncing…' : '⚡ Sync All (24h)'}
-              </button>
-              <button onClick={() => runAction('Sync48h', '/api/deep-sync?since=48')} disabled={actionLoading !== null}
-                className="bg-[#E21D1D]/80 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-surface/10 disabled:opacity-50">
-                {actionLoading === 'Sync48h' ? 'Syncing…' : '⚡ Sync All (48h)'}
-              </button>
-              <button onClick={() => { if (confirm('Full scan checks every video from every channel — this takes several minutes. Continue?')) runAction('SyncFull', '/api/deep-sync'); }} disabled={actionLoading !== null}
-                className="bg-amber-600 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-amber-700 disabled:opacity-50">
-                {actionLoading === 'SyncFull' ? 'Scanning…' : '🔍 Full Scan (All Time)'}
-              </button>
-              <button onClick={() => runAction('Backfill', '/api/backfill')} disabled={actionLoading !== null}
-                className="bg-gray-600 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-gray-700 disabled:opacity-50">
-                {actionLoading === 'Backfill' ? 'Running...' : 'Backfill Snippets'}
-              </button>
-              <button onClick={() => runAction('BackfillYears', '/api/admin/backfill-years')} disabled={actionLoading !== null}
-                className="bg-gray-600 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-gray-700 disabled:opacity-50">
-                {actionLoading === 'BackfillYears' ? 'Backfilling…' : 'Backfill Years'}
-              </button>
-              <button onClick={() => runAction('Refresh Avatars', '/api/admin/refresh-avatars')} disabled={actionLoading !== null}
-                className="bg-gray-600 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-gray-700 disabled:opacity-50">
-                {actionLoading === 'Refresh Avatars' ? 'Running...' : 'Refresh Avatars'}
-              </button>
-              <button onClick={() => { if (confirm('Delete reviews that look like trailers/news/roundups. Continue?')) runAction('Cleanup', '/api/admin/cleanup', 'POST'); }}
-                disabled={actionLoading !== null}
-                className="bg-rose-600 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-rose-700 disabled:opacity-50">
-                {actionLoading === 'Cleanup' ? 'Cleaning...' : 'Clean Bad Reviews'}
-              </button>
-              <button onClick={() => { if (confirm('⚠️ WIPE ALL REVIEWS? This deletes every row in the reviews table.')) runAction('Wipe', '/api/admin/wipe', 'POST'); }}
-                disabled={actionLoading !== null}
-                className="bg-red-900 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-red-950 disabled:opacity-50">
-                {actionLoading === 'Wipe' ? 'Wiping...' : 'Wipe All Reviews'}
-              </button>
-            </div>
+          <div className="bg-surface border border-[#2A2A2A] rounded-xl p-4 mb-6 shadow-sm flex items-center gap-4">
+            <p className="text-[11px] text-white/40 font-bold flex-1">
+              Sync new reviews and backfill snippets from the <strong className="text-white/70">Sync & Backfill</strong> tab.
+            </p>
+            <button onClick={() => runAction('Wipe', '/api/admin/wipe', 'POST')}
+              disabled={actionLoading !== null}
+              className="bg-red-900 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-red-950 disabled:opacity-50 shrink-0">
+              {actionLoading === 'Wipe' ? 'Wiping...' : '⚠️ Wipe All Reviews'}
+            </button>
             {actionStatus && (
               <pre className="mt-4 text-xs font-mono bg-surface border border-[#2A2A2A] rounded p-3 overflow-x-auto whitespace-pre-wrap text-ink/70">
                 {actionStatus}
@@ -2182,9 +1937,9 @@ export default function AdminPage() {
       )}
 
       {tab === 'pending' && <PendingReviewsTab />}
+      {tab === 'sync' && <SyncTab />}
       {tab === 'reviews' && <ReviewsTab />}
       {tab === 'add' && <ManualAddTab creators={creators} />}
-      {tab === 'gaming' && <GamingTab />}
       {tab === 'lists' && <ListsTab />}
       {tab === 'boxoffice' && <BoxOfficeTab />}
       {tab === 'health' && <ReviewHealthTab creators={creators} />}

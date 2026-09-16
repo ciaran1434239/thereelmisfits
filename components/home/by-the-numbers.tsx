@@ -362,15 +362,15 @@ export async function ByTheNumbers() {
   const top8Critics = standings.slice(0, 8);
 
   return (
-    <section className="w-full py-10 px-4 sm:px-6">
+    <section className="w-full grain" style={{ background: 'var(--bg-panel)', border: '1px solid var(--bg-panel-edge)', boxShadow: 'var(--shadow-hard-lg)', padding: '32px 24px' }}>
       <div className="max-w-[1060px] mx-auto">
 
         {/* ── Section header ────────────────────────────────────── */}
         <div className="mb-10">
-          <p className="text-[0.65rem] font-[700] uppercase tracking-[0.12em] text-[#C8201F] mb-1.5">
+          <p className="text-[12px] font-[700] uppercase tracking-[0.12em] mb-1.5" style={{ color: 'var(--ink-muted)', fontFamily: 'var(--font-editorial, serif)' }}>
             Stats, Rankings &amp; Data
           </p>
-          <h2 className="text-[1.6rem] sm:text-[2rem] font-black text-white tracking-tight leading-none uppercase">
+          <h2 className="font-black text-white uppercase leading-[0.95]" style={{ fontSize: 'clamp(2rem, 3.5vw, 3.5rem)', letterSpacing: '-0.025em' }}>
             By the Numbers
           </h2>
         </div>
@@ -442,11 +442,11 @@ export async function ByTheNumbers() {
                 <div className="relative">
                   <div className="flex absolute inset-0 pointer-events-none" aria-hidden>
                     <div className="flex-1" />
-                    <div className="w-[2px] bg-white/[0.07]" />
+                    <div className="w-px" style={{ background: 'var(--bg-panel-edge)' }} />
                     <div className="flex-1" />
-                    <div className="w-[2px] bg-white/[0.07]" />
+                    <div className="w-px" style={{ background: 'var(--bg-panel-edge)' }} />
                     <div className="flex-1" />
-                    <div className="w-[2px] bg-white/[0.07]" />
+                    <div className="w-px" style={{ background: 'var(--bg-panel-edge)' }} />
                     <div className="flex-1" />
                   </div>
                   <div className="grid grid-cols-4">

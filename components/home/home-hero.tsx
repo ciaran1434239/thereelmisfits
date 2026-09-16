@@ -144,7 +144,7 @@ export async function HomeHero() {
 
           <Link
             href={`/movie/${movie.id}`}
-            className="self-start mt-1 inline-flex items-center gap-2.5 border-2 border-white text-white bg-transparent px-6 py-3 rounded text-[11px] font-black uppercase tracking-widest hover:bg-[#C8201F] hover:border-[#C8201F] transition-all duration-200"
+            className="btn-primary self-start mt-1"
           >
             <Play size={12} fill="currentColor" />
             See Reviews

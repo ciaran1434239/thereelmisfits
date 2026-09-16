@@ -70,7 +70,7 @@ export async function TmdbRow({ title, subtitle, endpoint, variant = 'portrait',
               : null;
             const badgeColor = pct !== null ? badgeClasses(pct) : null;
             return (
-              <Link key={movie.id} href={`/movie/${movie.id}`} className="group relative block aspect-video overflow-hidden rounded-[6px] bg-[#1A1A1A] shadow-[0_4px_16px_rgba(0,0,0,0.15)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.22)] transition-shadow duration-300">
+              <Link key={movie.id} href={`/movie/${movie.id}`} className="group relative block aspect-video overflow-hidden bg-[#1A1A1A] border border-[#8F8A82] hover:shadow-[3px_3px_0_0_#C8201F] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:border-[#C8201F] transition-all duration-[120ms]">
                 <img
                   src={`https://image.tmdb.org/t/p/w780${movie.backdrop_path}`}
                   alt={movie.title}
@@ -115,7 +115,7 @@ export async function TmdbRow({ title, subtitle, endpoint, variant = 'portrait',
 
           return (
             <Link key={movie.id} href={`/movie/${movie.id}`} className="group flex flex-col">
-              <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[6px] bg-[#1A1A1A] mb-2 shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.18)] hover:-translate-y-1 transition-all duration-300">
+              <div className="relative aspect-[2/3] w-full overflow-hidden bg-[#1A1A1A] mb-2 border border-[#8F8A82] group-hover:shadow-[3px_3px_0_0_#C8201F] group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 group-hover:border-[#C8201F] transition-all duration-[120ms]">
                 <img
                   src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
                   alt={movie.title}

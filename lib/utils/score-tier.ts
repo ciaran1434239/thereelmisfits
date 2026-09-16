@@ -40,15 +40,15 @@ export function tileClasses(pct: number): string {
 // Extra right padding (pr-3.5) compensates for the angled cut.
 
 // Badge: solid fill, white text — reads clearly on both posters and light page background.
-export const BADGE_BG = 'rounded';
+export const BADGE_BG = '';
 
 /** Standard badge padding + weight. Apply alongside badgeClasses(). */
-export const BADGE_SIZE = 'text-[0.75rem] font-[800] px-2 py-[3px]';
+export const BADGE_SIZE = 'text-[12px] font-[800] px-2 py-[3px] border border-[#8F8A82] shadow-[2px_2px_0_0_#C8201F]';
 
 export const BADGE_CLASSES: Record<ScoreTier, string> = {
-  recommend: 'bg-[#16A34A] text-white rounded',
-  okay:      'bg-[#D97706] text-white rounded',
-  pass:      'bg-[#C8201F] text-white rounded',
+  recommend: 'bg-[#2FBF5A] text-white',
+  okay:      'bg-[#E0A22B] text-white',
+  pass:      'bg-[#C8201F] text-white',
 };
 
 /** Badge classes for poster score chips — solid fill, white text. */
@@ -57,7 +57,7 @@ export function badgeClasses(pct: number): string {
 }
 
 /** Consistent UNSCORED pill — same shape as score badge, muted. */
-export const UNSCORED_BADGE = 'bg-black/40 text-white/60 rounded';
+export const UNSCORED_BADGE = 'bg-black/40 text-white/60';
 
 /** Standardised rank number pill — dark, works on any poster. */
 export const RANK_PILL = 'absolute top-1.5 left-1.5 z-10 bg-black/55 text-white text-[11px] font-black px-1.5 py-0.5 rounded-full leading-none backdrop-blur-sm';

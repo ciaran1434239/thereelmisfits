@@ -20,7 +20,7 @@ export async function CriticsSpotlight() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
         {enriched.map(({ movieId, movieTitle, proPercent, conPercent, pro, con, posterPath }) => (
-          <div key={movieId} className="relative overflow-hidden rounded-xl bg-[#181818] flex flex-col">
+          <div key={movieId} className="relative overflow-hidden bg-[#181818] border border-[#2A2825] flex flex-col">
 
             {/* Poster bleeds through scrim at ~50% effective opacity */}
             {posterPath && (
@@ -55,7 +55,7 @@ export async function CriticsSpotlight() {
                     <p className="text-[40px] font-black leading-none text-[#4ADE80] tabular-nums">{proPercent}%</p>
                     <p className="text-[9px] font-bold text-white/30 uppercase tracking-[0.2em] mt-0.5">of critics</p>
                   </div>
-                  <div className="self-start px-2.5 py-1 rounded-md bg-[#4ADE80]/15 border border-[#4ADE80]/20">
+                  <div className="self-start px-2.5 py-1 bg-[#4ADE80]/15 border border-[#4ADE80]/20">
                     <span className="text-[9px] font-black tracking-[0.2em] uppercase text-[#4ADE80]">Recommend</span>
                   </div>
                   <div className="flex items-center gap-2 min-w-0 mt-auto">
@@ -76,7 +76,7 @@ export async function CriticsSpotlight() {
                     <p className="text-[40px] font-black leading-none text-[#F87171] tabular-nums">{conPercent}%</p>
                     <p className="text-[9px] font-bold text-white/30 uppercase tracking-[0.2em] mt-0.5">of critics</p>
                   </div>
-                  <div className="self-start px-2.5 py-1 rounded-md bg-[#F87171]/15 border border-[#F87171]/20">
+                  <div className="self-start px-2.5 py-1 bg-[#F87171]/15 border border-[#F87171]/20">
                     <span className="text-[9px] font-black tracking-[0.2em] uppercase text-[#F87171]">Skip It</span>
                   </div>
                   <div className="flex items-center gap-2 min-w-0 mt-auto">

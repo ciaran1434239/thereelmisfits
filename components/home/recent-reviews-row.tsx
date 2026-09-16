@@ -165,7 +165,7 @@ export function RecentReviewsRow({
 
           return (
             <div key={href} className="group flex-none w-[42%] md:w-[22%] lg:w-[15%] snap-start">
-              <Link href={href} className="block relative aspect-[2/3] w-full overflow-hidden rounded-[6px] bg-[#1A1A1A] shadow-[0_4px_16px_rgba(0,0,0,0.15)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.25)] hover:-translate-y-1.5 transition-all duration-300">
+              <Link href={href} className="block relative aspect-[2/3] w-full overflow-hidden bg-[#1A1A1A] border border-[#8F8A82] hover:shadow-[3px_3px_0_0_#C8201F] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:border-[#C8201F] transition-all duration-[120ms]">
 
                 {content.poster_path ? (
                   <img

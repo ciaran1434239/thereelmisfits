@@ -169,7 +169,8 @@ STEP 2 — EXTRACT THE VERDICT (only if isReview is true)
 - Letter grades: A+ = 10, A = 9.5, A- = 9, B+ = 8.5, B = 8, B- = 7.5, C+ = 7, C = 6, C- = 5.5, D = 4, F = 1.
 - "I'll pass" / "skip it" / "hard pass" / "not worth it" (as a verdict phrase) = score 4 or lower, recommend: false.
 - No numeric score or explicit verdict → score: 0, recommend: null.
-After normalizing: Score ≥ 6 → recommend: true. Score < 6 → recommend: false. No clear verdict → recommend: null. Must be consistent.
+After normalizing: Score ≥ 5 → recommend: true. Score < 5 → recommend: false. No clear verdict → recommend: null. Must be consistent.
+Lukewarm positives are still positives — only mark recommend: false when the reviewer is actively discouraging people from watching. Examples that are recommend: true: "I liked it but didn't love it", "it was good but not great", "worth a watch", "solid film", "I enjoyed it", "decent film", "3 out of 5".
 CRITICAL — handle double negatives correctly. "I don't see how this doesn't end up in my top films" = strongly positive (recommend: true). "I can't imagine not recommending this" = positive. Resolve the full logical meaning before scoring.
 
 "snippet":
@@ -331,7 +332,7 @@ export async function GET(req: NextRequest) {
   // ?limit=N        — how many reviews to process (default 50)
   // ?force          — re-process reviews that already have a score
   // ?creator_id=X   — restrict to a single creator
-  const limit = parseInt(url.searchParams.get('limit') ?? '50');
+  const limit = parseInt(url.searchParams.get('limit') ?? '200');
   const force = url.searchParams.has('force');
   const creatorId = url.searchParams.get('creator_id');
 
@@ -426,7 +427,7 @@ export async function GET(req: NextRequest) {
     const score = result.score ?? 0;
     // null = no signal found — excluded from % calculation (never guess)
     let recommend: boolean | null = typeof result.recommend === 'boolean' ? result.recommend
-      : score > 0 ? score >= 6
+      : score > 0 ? score >= 5
       : null;
 
     // ── Consistency check: does the snippet contradict the verdict? ────────────

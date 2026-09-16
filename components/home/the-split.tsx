@@ -100,7 +100,7 @@ export async function TheSplit() {
       <div className="grid grid-cols-7 gap-x-2">
         {enriched.map(({ id, title, posterPath, pct, total }) => (
           <Link key={id} href={`/movie/${id}` as any} className="group flex flex-col">
-            <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[6px] bg-[#1A1A1A] mb-2 shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.2)] hover:-translate-y-1 transition-all duration-300">
+            <div className="relative aspect-[2/3] w-full overflow-hidden bg-[#1A1A1A] mb-2 border border-[#8F8A82] group-hover:shadow-[3px_3px_0_0_#C8201F] group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 group-hover:border-[#C8201F] transition-all duration-[120ms]">
               {posterPath ? (
                 <img
                   src={`https://image.tmdb.org/t/p/w185${posterPath}`}
