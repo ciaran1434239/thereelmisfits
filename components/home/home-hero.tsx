@@ -110,12 +110,26 @@ export async function HomeHero() {
             )}
           </div>
 
-          <h1 className="text-[clamp(2.2rem,5vw,4.2rem)] font-[950] tracking-[-0.04em] leading-[0.88] uppercase italic text-white">
+          <h1
+            className="font-[950] tracking-[-0.04em] leading-[0.88] uppercase italic text-white"
+            style={{
+              fontSize: 'clamp(2.8rem, 6vw, 6rem)',
+              textShadow: '4px 4px 0 var(--brand)',
+            }}
+          >
             {movie.title}
           </h1>
 
           {movie.recPct !== null && (
-            <div className="flex items-end gap-7 mt-1">
+            <div
+              className="inline-flex items-end gap-7 mt-1 px-5 py-3"
+              style={{
+                background: 'var(--bg-panel)',
+                border: '1px solid var(--bg-panel-edge)',
+                boxShadow: 'var(--shadow-hard)',
+                transform: 'rotate(-1deg)',
+              }}
+            >
               <div>
                 <p className={`text-[3.2rem] font-black leading-none tracking-tight ${scoreColor}`}>
                   {movie.recPct}%
@@ -124,7 +138,7 @@ export async function HomeHero() {
                   Aggregate score
                 </p>
               </div>
-              <div className="w-px h-10 bg-white/25 mb-5 shrink-0" />
+              <div className="w-px h-10 mb-5 shrink-0" style={{ background: 'var(--bg-panel-edge)' }} />
               <div>
                 <p className="text-[3.2rem] font-black leading-none tracking-tight text-white">
                   {movie.total}

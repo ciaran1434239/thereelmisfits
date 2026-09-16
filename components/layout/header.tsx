@@ -21,7 +21,7 @@ interface SearchResult {
 const NAV = [
   {
     label: 'Movies',
-    href: '/reviews?type=movie',
+    href: '/movies',
     groups: [
       {
         heading: 'Now',

@@ -30,15 +30,11 @@ const nextConfig = {
   // the actual app/ route tree. Catches dead links at build time.
   typedRoutes: true,
 
-  // Once we replace the gradient placeholders with real poster art, register
-  // the CDN host(s) here so next/image can serve them.
   images: {
     remotePatterns: [
-      // {
-      //   protocol: 'https',
-      //   hostname: 'img.reelcrit.com',
-      //   pathname: '/posters/**',
-      // },
+      { protocol: 'https', hostname: 'image.tmdb.org'  },
+      { protocol: 'https', hostname: 'i.ytimg.com'     },
+      { protocol: 'https', hostname: 'yt3.ggpht.com'   },
     ],
   },
 
