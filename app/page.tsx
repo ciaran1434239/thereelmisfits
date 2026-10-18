@@ -3,6 +3,7 @@ import { LeadStoryBlock }     from '@/components/home/lead-story-block';
 import { VerdictFilterBar }   from '@/components/home/verdict-filter-bar';
 import { VerdictsWall }       from '@/components/home/verdicts-wall';
 import { PosterRail }         from '@/components/home/poster-rail';
+import { SectionTitle }       from '@/components/home/section-title';
 import type { VerdictFilter } from '@/lib/data/verdicts-feed';
 
 export const dynamic = 'force-dynamic';
@@ -18,36 +19,31 @@ export default async function HomePage({
     : 'all';
 
   return (
-    <div className="w-full overflow-x-hidden">
+    <div className="w-full pb-24" style={{ background: '#F7F4EE', color: '#151515' }}>
 
-      {/* ── Lead Story ─────────────────────────────────────────────── */}
-      <LeadStoryBlock />
-
-      {/* ── Filter bar (sticky, client) ────────────────────────────── */}
-      <Suspense>
-        <VerdictFilterBar currentFilter={safeFilter} />
+      <Suspense fallback={<div style={{ height: 420 }} />}>
+        <LeadStoryBlock />
       </Suspense>
 
-      {/* ── Content grid ───────────────────────────────────────────── */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-5 pb-16">
-        <div className="grid grid-cols-12 gap-5">
+      <Suspense fallback={null}>
+        <PosterRail />
+      </Suspense>
 
-          {/* Verdicts Wall — cols 1-8 */}
-          <main className="col-span-12 lg:col-span-8">
-            <Suspense fallback={<WallSkeleton />}>
-              <VerdictsWall filter={safeFilter} />
+      <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-14 sm:pt-20">
+        <SectionTitle
+          title="Latest Verdicts"
+          right={
+            <Suspense>
+              <VerdictFilterBar currentFilter={safeFilter} />
             </Suspense>
-          </main>
-
-          {/* Poster Rail — cols 9-12, desktop only, sticky */}
-          <aside className="hidden lg:block col-span-4">
-            <Suspense fallback={null}>
-              <PosterRail />
-            </Suspense>
-          </aside>
-
+          }
+        />
+        <div className="mt-6">
+          <Suspense fallback={<WallSkeleton />}>
+            <VerdictsWall filter={safeFilter} />
+          </Suspense>
         </div>
-      </div>
+      </section>
 
     </div>
   );
@@ -55,17 +51,9 @@ export default async function HomePage({
 
 function WallSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="animate-pulse"
-          style={{
-            height: 280,
-            background: 'var(--bg-panel)',
-            border: '1px solid var(--bg-panel-edge)',
-          }}
-        />
+        <div key={i} className="animate-pulse" style={{ height: 340, background: '#ECE8DE' }} />
       ))}
     </div>
   );

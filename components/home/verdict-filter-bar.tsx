@@ -9,18 +9,12 @@ const FILTERS = [
   { label: 'Skip It',   value: 'skip'      },
 ] as const;
 
-type FilterValue = typeof FILTERS[number]['value'];
+export function VerdictFilterBar({ currentFilter }: { currentFilter: string }) {
+  const router       = useRouter();
+  const pathname     = usePathname();
+  const searchParams = useSearchParams();
 
-interface VerdictFilterBarProps {
-  currentFilter: string;
-}
-
-export function VerdictFilterBar({ currentFilter }: VerdictFilterBarProps) {
-  const router      = useRouter();
-  const pathname    = usePathname();
-  const searchParams= useSearchParams();
-
-  const setFilter = useCallback((value: FilterValue) => {
+  const setFilter = useCallback((value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value === 'all') params.delete('filter');
     else params.set('filter', value);
@@ -29,35 +23,25 @@ export function VerdictFilterBar({ currentFilter }: VerdictFilterBarProps) {
   }, [router, pathname, searchParams]);
 
   return (
-    <div
-      className="sticky top-0 z-30 w-full"
-      style={{ background: 'var(--bg-base)', borderBottom: '1px solid var(--bg-panel-edge)' }}
-    >
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6">
-        <div className="flex items-center gap-1 py-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {FILTERS.map(f => {
-            const active = (f.value === 'all' ? (!currentFilter || currentFilter === 'all') : currentFilter === f.value);
-            return (
-              <button
-                key={f.value}
-                onClick={() => setFilter(f.value)}
-                className="flex-none text-[11px] font-black uppercase tracking-[0.12em] px-3 py-1.5 transition-all duration-100"
-                style={active ? {
-                  background: 'var(--brand)',
-                  color: '#fff',
-                  border: '1px solid var(--brand)',
-                } : {
-                  background: 'transparent',
-                  color: 'var(--ink-muted)',
-                  border: '1px solid var(--bg-panel-edge)',
-                }}
-              >
-                {f.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+    <div className="flex items-center gap-5" role="tablist">
+      {FILTERS.map(f => {
+        const active = f.value === 'all' ? (!currentFilter || currentFilter === 'all') : currentFilter === f.value;
+        return (
+          <button
+            key={f.value}
+            role="tab"
+            aria-selected={active}
+            onClick={() => setFilter(f.value)}
+            className="text-[13px] font-bold pb-1 transition-colors"
+            style={{
+              color: active ? '#151515' : '#8A8578',
+              borderBottom: active ? '2px solid #C8201F' : '2px solid transparent',
+            }}
+          >
+            {f.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

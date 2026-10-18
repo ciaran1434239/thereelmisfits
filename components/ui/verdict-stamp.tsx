@@ -4,22 +4,14 @@ interface VerdictStampProps {
 }
 
 export function VerdictStamp({ recommend, size = 'md' }: VerdictStampProps) {
-  const base = 'inline-flex items-center font-black uppercase tracking-[0.12em] border';
-  const sz   = size === 'sm' ? 'text-[9px] px-1.5 py-0.5 gap-0.5' : 'text-[10px] px-2 py-[3px] gap-1';
-
-  return recommend ? (
+  const color = recommend ? '#1E8E3E' : '#C8201F';
+  return (
     <span
-      className={`${base} ${sz}`}
-      style={{ color: 'var(--score-green)', borderColor: 'var(--score-green)', background: 'rgba(47,191,90,0.1)' }}
+      className={`inline-flex items-center gap-1.5 font-bold uppercase tracking-[0.08em] ${size === 'sm' ? 'text-[11px]' : 'text-[12px]'}`}
+      style={{ color }}
     >
-      ✓ Recommend
-    </span>
-  ) : (
-    <span
-      className={`${base} ${sz}`}
-      style={{ color: '#F87171', borderColor: '#F87171', background: 'rgba(248,113,113,0.1)' }}
-    >
-      ✗ Skip It
+      <span aria-hidden className="inline-block w-2 h-2 rounded-full" style={{ background: color }} />
+      {recommend ? 'Recommends' : 'Skips it'}
     </span>
   );
 }
