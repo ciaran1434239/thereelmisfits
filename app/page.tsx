@@ -4,6 +4,7 @@ import { VerdictFilterBar }   from '@/components/home/verdict-filter-bar';
 import { VerdictsWall }       from '@/components/home/verdicts-wall';
 import { PosterRail }         from '@/components/home/poster-rail';
 import { SectionTitle }       from '@/components/home/section-title';
+import { getVerdictsFeed }    from '@/lib/data/verdicts-feed';
 import type { VerdictFilter } from '@/lib/data/verdicts-feed';
 
 export const dynamic = 'force-dynamic';
@@ -18,43 +19,36 @@ export default async function HomePage({
     ? (filter as VerdictFilter)
     : 'all';
 
-  return (
-    <div className="w-full pb-24" style={{ background: '#F7F4EE', color: '#151515' }}>
+  const [latest, filtered] = await Promise.all([
+    getVerdictsFeed('all', 28),
+    safeFilter === 'all' ? Promise.resolve(null) : getVerdictsFeed(safeFilter, 27),
+  ]);
+  const justIn = latest.slice(0, 4);
+  const wall   = filtered ?? latest.slice(4);
 
-      <Suspense fallback={<div style={{ height: 420 }} />}>
-        <LeadStoryBlock />
-      </Suspense>
+  return (
+    <div className="w-full pb-28">
+
+      <LeadStoryBlock justIn={justIn} />
 
       <Suspense fallback={null}>
         <PosterRail />
       </Suspense>
 
-      <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-14 sm:pt-20">
+      <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-20 sm:pt-28">
         <SectionTitle
-          title="Latest Verdicts"
+          title="Latest verdicts"
           right={
             <Suspense>
               <VerdictFilterBar currentFilter={safeFilter} />
             </Suspense>
           }
         />
-        <div className="mt-6">
-          <Suspense fallback={<WallSkeleton />}>
-            <VerdictsWall filter={safeFilter} />
-          </Suspense>
+        <div className="mt-8">
+          <VerdictsWall items={wall} />
         </div>
       </section>
 
-    </div>
-  );
-}
-
-function WallSkeleton() {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="animate-pulse" style={{ height: 340, background: '#ECE8DE' }} />
-      ))}
     </div>
   );
 }

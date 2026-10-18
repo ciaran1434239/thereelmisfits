@@ -1,114 +1,114 @@
 import Link from 'next/link';
 import { VerdictStamp } from '@/components/ui/verdict-stamp';
 import { YTThumb }      from '@/components/ui/yt-thumb';
-import { getVerdictsFeed } from '@/lib/data/verdicts-feed';
+import { fetchPoster }  from '@/lib/data/tmdb-poster';
+import type { VerdictItem } from '@/lib/data/verdicts-feed';
 
-const TMDB_KEY = process.env.TMDB_API_KEY;
+const DISPLAY = 'var(--font-display), Impact, sans-serif';
+const SERIF   = 'var(--font-editorial, serif)';
 
-async function fetchPoster(id: number): Promise<string | null> {
-  if (!TMDB_KEY) return null;
-  const d = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_KEY}`, { next: { revalidate: 3600 } })
-    .then(r => (r.ok ? r.json() : null)).catch(() => null);
-  return d?.poster_path ? `https://image.tmdb.org/t/p/w154${d.poster_path}` : null;
-}
-import type { VerdictItem, VerdictFilter } from '@/lib/data/verdicts-feed';
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  const diff = Math.floor((Date.now() - d.getTime()) / 86_400_000);
+export function formatDate(iso: string): string {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
   if (diff <= 0) return 'Today';
   if (diff === 1) return 'Yesterday';
   if (diff < 7) return `${diff} days ago`;
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
-function Avatar({ src, name }: { src: string | null; name: string }) {
-  if (src) return <img src={src} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />;
+export function quoteOf(item: VerdictItem, max = 160): string | null {
+  const t = item.verdictShort ?? item.snippet;
+  if (!t) return null;
+  return t.length > max ? t.slice(0, max).trimEnd() + '…' : t;
+}
+
+function CriticLine({ item }: { item: VerdictItem }) {
   return (
-    <span className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[11px] font-bold text-white" style={{ background: '#C8201F' }}>
-      {name.charAt(0).toUpperCase()}
-    </span>
+    <p className="text-[12px]" style={{ color: '#5F5A50' }}>
+      <span className="font-bold" style={{ color: '#151515' }}>{item.creatorName}</span> · {formatDate(item.postedAt)}
+    </p>
   );
 }
 
-function VerdictCard({ item, poster }: { item: VerdictItem; poster: string | null }) {
-  const text = item.verdictShort
-    ?? (item.snippet ? item.snippet.slice(0, 180) + (item.snippet.length > 180 ? '…' : '') : null);
-
+function ThumbTile({ item, poster, big }: { item: VerdictItem; poster: string | null; big?: boolean }) {
+  const quote = quoteOf(item, big ? 220 : 110);
   return (
-    <article className="group/card flex flex-col bg-white transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:border-[#151515] hover:shadow-[5px_5px_0_0_#C8201F]" style={{ border: '1px solid #151515' }}>
-      {item.youtubeVideoId ? (
-        <YTThumb videoId={item.youtubeVideoId} title={item.movieTitle} poster={poster} />
-      ) : (
-        <div style={{ aspectRatio: '16/9', background: '#E4DFD3' }} />
-      )}
-
-      <div className="flex flex-col flex-1 p-4 gap-2">
-        <Link href={`/movie/${item.movieId}` as any} className="hover:underline underline-offset-2">
+    <article className="group/card flex flex-col gap-3">
+      {item.youtubeVideoId
+        ? <YTThumb videoId={item.youtubeVideoId} title={item.movieTitle} poster={poster} />
+        : <div style={{ aspectRatio: '16/9', background: '#DDD6C6' }} />}
+      <div className="flex flex-col gap-1.5">
+        <Link href={`/movie/${item.movieId}` as any} className="hover:text-[#C8201F] transition-colors" style={{ color: '#151515' }}>
           <h3
-            className="text-[19px] leading-tight line-clamp-1"
-            style={{ fontFamily: 'var(--font-editorial, serif)', fontWeight: 700, color: '#151515' }}
+            className="line-clamp-2"
+            style={{ fontFamily: DISPLAY, fontSize: big ? 'clamp(2.25rem,4vw,3.25rem)' : '1.9rem', lineHeight: 0.95, color: 'inherit' }}
           >
             {item.movieTitle}
           </h3>
         </Link>
-
-        <div className="flex items-center gap-3">
-          <VerdictStamp recommend={item.recommend} size="sm" />
-          {item.score != null && item.score > 0 && (
-            <span className="text-[12px] font-bold tabular-nums" style={{ color: '#6B665C' }}>
-              {item.score % 1 === 0 ? item.score.toFixed(0) : item.score.toFixed(1)}/10
-            </span>
-          )}
-        </div>
-
-        {text && (
-          <p
-            className="text-[14px] leading-relaxed line-clamp-3"
-            style={{ fontFamily: 'var(--font-editorial, serif)', color: '#3A362F' }}
-          >
-            &ldquo;{text}&rdquo;
+        <VerdictStamp recommend={item.recommend} size="sm" />
+        {quote && (
+          <p className={`leading-snug ${big ? 'text-[17px] line-clamp-4' : 'text-[14px] line-clamp-3'}`} style={{ fontFamily: SERIF, color: '#2E2A24' }}>
+            &ldquo;{quote}&rdquo;
           </p>
         )}
-
-        <div className="flex items-center gap-2 mt-auto pt-3" style={{ borderTop: '1px solid #ECE8DE' }}>
-          <Avatar src={item.creatorAvatarUrl} name={item.creatorName} />
-          {item.creatorHandle ? (
-            <Link href={`/channel/${item.creatorHandle}` as any} className="text-[12px] font-bold line-clamp-1 hover:underline" style={{ color: '#151515' }}>
-              {item.creatorName}
-            </Link>
-          ) : (
-            <span className="text-[12px] font-bold line-clamp-1" style={{ color: '#151515' }}>{item.creatorName}</span>
-          )}
-          <time dateTime={item.postedAt} className="ml-auto text-[12px] shrink-0" style={{ color: '#5F5A50' }}>
-            {formatDate(item.postedAt)}
-          </time>
-        </div>
+        <CriticLine item={item} />
       </div>
     </article>
   );
 }
 
-export async function VerdictsWall({ filter = 'all' }: { filter?: VerdictFilter }) {
-  const verdicts = await getVerdictsFeed(filter, 24);
+function QuoteTile({ item }: { item: VerdictItem }) {
+  const yes = item.recommend;
+  const quote = quoteOf(item, 120) ?? item.movieTitle;
+  return (
+    <Link
+      href={`/movie/${item.movieId}` as any}
+      className="flex flex-col justify-between gap-6 p-5 min-h-[260px] transition-transform duration-150 hover:-rotate-1 hover:scale-[1.02]"
+      style={{ background: yes ? '#F2C94C' : '#C8201F', color: yes ? '#151515' : '#fff' }}
+    >
+      <p className="text-[11px] font-bold uppercase tracking-[0.15em]">{yes ? 'Recommends' : 'Skip it'}</p>
+      <p className="line-clamp-6" style={{ fontFamily: DISPLAY, fontSize: 'clamp(1.7rem, 2.2vw, 2.1rem)', lineHeight: 1.0, letterSpacing: '0.01em' }}>
+        &ldquo;{quote}&rdquo;
+      </p>
+      <p className="text-[12px] font-bold">
+        {item.creatorName} <span className="font-normal opacity-80">on {item.movieTitle}</span>
+      </p>
+    </Link>
+  );
+}
 
-  if (verdicts.length === 0) {
+// Repeating 9-tile pattern: feature(2 rows) + 2 thumbs / 2 quotes / 4 thumbs
+const PATTERN = ['feature', 'thumb', 'thumb', 'quote', 'quote', 'thumb', 'thumb', 'thumb', 'thumb'] as const;
+
+export async function VerdictsWall({ items }: { items: VerdictItem[] }) {
+  if (items.length === 0) {
     return (
-      <div className="py-20 text-center">
-        <p style={{ fontFamily: 'var(--font-editorial, serif)', fontSize: '1.5rem', fontWeight: 700, color: '#151515' }}>
-          Nothing here yet.
-        </p>
-        <p className="text-[14px] mt-2" style={{ color: '#6B665C' }}>The critics haven&apos;t weighed in. Check back soon.</p>
+      <div className="py-20">
+        <p style={{ fontFamily: DISPLAY, fontSize: '3rem', lineHeight: 1, color: '#151515' }}>Nothing here yet.</p>
+        <p className="text-[14px] mt-2" style={{ color: '#5F5A50' }}>The critics haven&apos;t weighed in. Check back soon.</p>
       </div>
     );
   }
 
-  const ids = [...new Set(verdicts.map(v => v.movieId))];
+  const ids = [...new Set(items.map(v => v.movieId))];
   const posters = new Map(await Promise.all(ids.map(async id => [id, await fetchPoster(id)] as const)));
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {verdicts.map(item => <VerdictCard key={item.reviewId} item={item} poster={posters.get(item.movieId) ?? null} />)}
+    <div className="grid grid-cols-12 gap-x-6 gap-y-10">
+      {items.map((item, i) => {
+        const kind = PATTERN[i % PATTERN.length];
+        const poster = posters.get(item.movieId) ?? null;
+        const span =
+          kind === 'feature' ? 'col-span-12 md:col-span-6 md:row-span-2' :
+          'col-span-12 sm:col-span-6 md:col-span-3';
+        return (
+          <div key={item.reviewId} className={span}>
+            {kind === 'quote'
+              ? <QuoteTile item={item} />
+              : <ThumbTile item={item} poster={poster} big={kind === 'feature'} />}
+          </div>
+        );
+      })}
     </div>
   );
 }

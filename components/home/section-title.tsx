@@ -10,22 +10,17 @@ interface SectionTitleProps {
 
 export function SectionTitle({ title, href, hrefLabel, right }: SectionTitleProps) {
   return (
-    <div className="flex items-center justify-between gap-4 flex-wrap">
+    <div className="flex items-end justify-between gap-4 flex-wrap">
       <h2
-        className="inline-block px-4 py-1.5 -rotate-1"
         style={{
-          background: '#C8201F',
-          color: '#fff',
-          boxShadow: '4px 4px 0 0 #151515',
-          fontFamily: 'var(--font-editorial, serif)',
-          fontWeight: 700,
-          fontSize: 'clamp(1.25rem, 2.2vw, 1.75rem)',
-          letterSpacing: '-0.01em',
-          lineHeight: 1.1,
-          textTransform: 'uppercase',
+          fontFamily: 'var(--font-display), Impact, sans-serif',
+          fontSize: 'clamp(2.25rem, 4.5vw, 3.5rem)',
+          lineHeight: 0.9,
+          letterSpacing: '0.01em',
+          color: '#151515',
         }}
       >
-        {title}
+        {title}<span style={{ color: '#C8201F' }}>.</span>
       </h2>
       {right}
       {href && hrefLabel && (

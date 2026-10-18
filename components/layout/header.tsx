@@ -70,7 +70,7 @@ function DropdownPanel({
   groups: readonly { heading: string; items: readonly { label: string; href: string }[] }[];
 }) {
   return (
-    <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50">
+    <div data-keep-dark className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50">
       {/* Arrow notch */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-2 overflow-hidden">
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#1E1E1E] rotate-45 translate-y-1/2 border-t border-l border-white/10" />
@@ -242,7 +242,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 w-full z-50 bg-[#111111] border-b border-white/[0.06]">
+    <header className="sticky top-0 w-full z-50 bg-[var(--shell-bg)]">
       <div className="max-w-[1140px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 xl:gap-8 py-3">
 
         {/* ── LOGO ─────────────────────────────────────────────── */}
@@ -296,7 +296,7 @@ export function Header() {
 
             {/* Autocomplete dropdown */}
             {suggOpen && (suggestions.length > 0 || suggLoading) && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden z-50 min-w-[300px]">
+              <div data-keep-dark className="absolute top-full left-0 right-0 mt-2 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden z-50 min-w-[300px]">
                 {suggLoading && suggestions.length === 0 ? (
                   <div className="px-4 py-3 text-xs text-white/40 font-bold">Searching…</div>
                 ) : (
@@ -365,7 +365,7 @@ export function Header() {
                   )}
                 </button>
                 {userMenuOpen && (
-                  <div className="absolute right-0 top-12 w-48 bg-[#1A1A1A] rounded-xl shadow-2xl shadow-black/60 border border-white/10 py-2 z-50">
+                  <div data-keep-dark className="absolute right-0 top-12 w-48 bg-[#1A1A1A] rounded-xl shadow-2xl shadow-black/60 border border-white/10 py-2 z-50">
                     <div className="px-4 py-2 border-b border-white/[0.08] mb-1">
                       <p className="text-xs font-bold text-white truncate">
                         {user.user_metadata?.full_name || user.email}
@@ -411,7 +411,7 @@ export function Header() {
 
       {/* ── MOBILE MENU ──────────────────────────────────────────── */}
       {mobileOpen && (
-        <div className="lg:hidden absolute top-full left-0 w-full bg-[#111111] border-t border-white/[0.06] shadow-xl py-6 px-6 flex flex-col gap-5 z-50 max-h-[80vh] overflow-y-auto">
+        <div className="lg:hidden absolute top-full left-0 w-full bg-[var(--shell-bg)] shadow-xl py-6 px-6 flex flex-col gap-5 z-50 max-h-[80vh] overflow-y-auto">
           {NAV.map(item => (
             <MobileNavItem key={item.label} item={item} onClose={() => setMobileOpen(false)} />
           ))}
