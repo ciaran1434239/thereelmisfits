@@ -34,7 +34,7 @@ function ThumbTile({ item, poster, big }: { item: VerdictItem; poster: string | 
   return (
     <article className="group/card flex flex-col gap-3">
       {item.youtubeVideoId
-        ? <YTThumb videoId={item.youtubeVideoId} title={item.movieTitle} poster={poster} />
+        ? <YTThumb videoId={item.youtubeVideoId} title={item.movieTitle} poster={poster} avatar={item.creatorAvatarUrl} critic={item.creatorName} />
         : <div style={{ aspectRatio: '16/9', background: '#DDD6C6' }} />}
       <div className="flex flex-col gap-1.5">
         <Link href={`/movie/${item.movieId}` as any} className="hover:text-[#C8201F] transition-colors" style={{ color: '#151515' }}>
@@ -59,19 +59,26 @@ function ThumbTile({ item, poster, big }: { item: VerdictItem; poster: string | 
 
 function QuoteTile({ item }: { item: VerdictItem }) {
   const yes = item.recommend;
+  const accent = yes ? '#B8860B' : '#C8201F';
   const quote = quoteOf(item, 120) ?? item.movieTitle;
   return (
     <Link
       href={`/movie/${item.movieId}` as any}
-      className="flex flex-col justify-between gap-6 p-5 min-h-[260px] transition-transform duration-150 hover:-rotate-1 hover:scale-[1.02]"
-      style={{ background: yes ? '#F2C94C' : '#C8201F', color: yes ? '#151515' : '#fff' }}
+      className="relative flex flex-col justify-end gap-4 px-5 pb-5 pt-14 min-h-[260px] transition-transform duration-150 hover:-rotate-1"
+      style={{ background: yes ? 'rgba(212,160,23,0.14)' : 'rgba(200,32,31,0.07)', color: '#151515' }}
     >
-      <p className="text-[11px] font-bold uppercase tracking-[0.15em]">{yes ? 'Recommends' : 'Skip it'}</p>
+      <span
+        aria-hidden
+        className="absolute left-4 top-0 select-none"
+        style={{ fontFamily: DISPLAY, fontSize: '8rem', lineHeight: 1, color: accent, transform: 'translateY(-0.12em)' }}
+      >
+        &ldquo;
+      </span>
       <p className="line-clamp-6" style={{ fontFamily: DISPLAY, fontSize: 'clamp(1.7rem, 2.2vw, 2.1rem)', lineHeight: 1.0, letterSpacing: '0.01em' }}>
-        &ldquo;{quote}&rdquo;
+        {quote}
       </p>
-      <p className="text-[12px] font-bold">
-        {item.creatorName} <span className="font-normal opacity-80">on {item.movieTitle}</span>
+      <p className="text-[12px] font-bold" style={{ color: accent }}>
+        {yes ? 'Recommends' : 'Skips it'} <span className="font-normal" style={{ color: '#5F5A50' }}>· {item.creatorName} on {item.movieTitle}</span>
       </p>
     </Link>
   );

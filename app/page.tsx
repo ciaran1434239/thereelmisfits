@@ -27,7 +27,7 @@ export default async function HomePage({
   const wall   = filtered ?? latest.slice(4);
 
   return (
-    <div className="w-full pb-28">
+    <div className="paper-grain w-full pb-28">
 
       <LeadStoryBlock justIn={justIn} />
 
