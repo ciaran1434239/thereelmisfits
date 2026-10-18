@@ -2,7 +2,7 @@
 import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
-import { Bebas_Neue, Bitter } from 'next/font/google';
+import { Bebas_Neue, Bitter, Playfair_Display } from 'next/font/google';
 import { Providers } from '@/components/layout/providers';
 import { AppShell } from '@/components/layout/app-shell';
 import './globals.css';
@@ -18,6 +18,13 @@ const bitter = Bitter({
   weight: ['400', '700'],
   subsets: ['latin'],
   variable: '--font-editorial',
+  display: 'swap',
+});
+
+const playfair = Playfair_Display({
+  weight: ['600', '700', '800'],
+  subsets: ['latin'],
+  variable: '--font-headline',
   display: 'swap',
 });
 
@@ -38,7 +45,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${GeistSans.variable} ${GeistMono.variable} ${bebasNeue.variable} ${bitter.variable}`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${bebasNeue.variable} ${bitter.variable} ${playfair.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased bg-bg text-ink">

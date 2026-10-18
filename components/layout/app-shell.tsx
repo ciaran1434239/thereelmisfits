@@ -10,7 +10,7 @@ const LIGHT_ROUTES = ['/'];
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const light = LIGHT_ROUTES.includes(pathname);
-  const bg = light ? '#F4F0E6' : '#181818';
+  const bg = light ? '#FFFFFF' : '#181818';
 
   return (
     <div

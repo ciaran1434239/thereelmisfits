@@ -27,7 +27,7 @@ export default async function HomePage({
   const wall   = filtered ?? latest.slice(4);
 
   return (
-    <div className="paper-grain w-full pb-28">
+    <div className="w-full pb-28">
 
       <LeadStoryBlock justIn={justIn} />
 
@@ -35,16 +35,16 @@ export default async function HomePage({
         <PosterRail />
       </Suspense>
 
-      <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-20 sm:pt-28">
+      <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-24 sm:pt-32">
         <SectionTitle
           title="Latest verdicts"
-          right={
+          below={
             <Suspense>
               <VerdictFilterBar currentFilter={safeFilter} />
             </Suspense>
           }
         />
-        <div className="mt-8">
+        <div className="mt-10">
           <VerdictsWall items={wall} />
         </div>
       </section>

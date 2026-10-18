@@ -23,7 +23,7 @@ export function VerdictFilterBar({ currentFilter }: { currentFilter: string }) {
   }, [router, pathname, searchParams]);
 
   return (
-    <div className="flex items-center gap-5" role="tablist">
+    <div className="flex items-center justify-center gap-6" role="tablist">
       {FILTERS.map(f => {
         const active = f.value === 'all' ? (!currentFilter || currentFilter === 'all') : currentFilter === f.value;
         return (
@@ -34,7 +34,7 @@ export function VerdictFilterBar({ currentFilter }: { currentFilter: string }) {
             onClick={() => setFilter(f.value)}
             className="text-[13px] font-bold pb-1 transition-colors"
             style={{
-              color: active ? '#151515' : '#5F5A50',
+              color: active ? '#111' : '#666',
               borderBottom: active ? '2px solid #C8201F' : '2px solid transparent',
             }}
           >
