@@ -17,6 +17,9 @@ export function quoteOf(item: VerdictItem, max = 160): string | null {
 }
 
 export function VerdictCard({ item, poster, size = 'md' }: { item: VerdictItem; poster: string | null; size?: 'lg' | 'md' }) {
+  const many = item.criticCount > 1;
+  const pct = Math.round((item.recCount / item.criticCount) * 100);
+  const good = many ? pct >= 50 : item.recommend;
   return (
     <StoryCard
       size={size}
@@ -25,10 +28,11 @@ export function VerdictCard({ item, poster, size = 'md' }: { item: VerdictItem; 
       imageHref={item.youtubeVideoId ? `https://youtube.com/watch?v=${item.youtubeVideoId}` : undefined}
       title={item.movieTitle}
       quote={quoteOf(item, size === 'lg' ? 200 : 140)}
-      label={item.recommend ? 'Recommends' : 'Skips it'}
-      labelColor={item.recommend ? '#1E8E3E' : '#C8201F'}
-      meta={`${item.creatorName} · ${formatDate(item.postedAt)}`}
+      label={many ? `${pct}% recommend` : item.recommend ? 'Recommends' : 'Skips it'}
+      labelColor={good ? '#1E8E3E' : '#C8201F'}
+      meta={many ? `${item.criticCount} critics · Latest: ${item.creatorName}` : `${item.creatorName} · ${formatDate(item.postedAt)}`}
       poster={poster}
+      verdict={good}
     />
   );
 }

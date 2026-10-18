@@ -5,6 +5,7 @@ import { VerdictsWall }       from '@/components/home/verdicts-wall';
 import { PosterRail }         from '@/components/home/poster-rail';
 import { SectionTitle }       from '@/components/home/section-title';
 import { getVerdictsFeed }    from '@/lib/data/verdicts-feed';
+import { getLeadStory }       from '@/lib/data/lead-story';
 import type { VerdictFilter } from '@/lib/data/verdicts-feed';
 
 export const dynamic = 'force-dynamic';
@@ -19,9 +20,12 @@ export default async function HomePage({
     ? (filter as VerdictFilter)
     : 'all';
 
+  const lead = await getLeadStory();
+  const exclude = lead ? [lead.movieId] : [];
+
   const [latest, filtered] = await Promise.all([
-    getVerdictsFeed('all', 27),
-    safeFilter === 'all' ? Promise.resolve(null) : getVerdictsFeed(safeFilter, 24),
+    getVerdictsFeed('all', 27, exclude),
+    safeFilter === 'all' ? Promise.resolve(null) : getVerdictsFeed(safeFilter, 24, exclude),
   ]);
   const justIn = latest.slice(0, 3);
   const wall   = filtered ?? latest.slice(3);

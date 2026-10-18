@@ -14,6 +14,8 @@ export interface VerdictItem {
   creatorName: string;
   creatorHandle: string | null;
   creatorAvatarUrl: string | null;
+  criticCount: number;
+  recCount: number;
 }
 
 export type VerdictFilter = 'all' | 'recommend' | 'skip' | `channel:${string}`;
@@ -30,14 +32,30 @@ export interface PosterFilm {
 export async function getVerdictsFeed(
   filter: VerdictFilter = 'all',
   limit = 24,
+  excludeMovieIds: number[] = [],
 ): Promise<VerdictItem[]> {
-  // Try progressively wider windows; fall back to all-time if needed
-  for (const days of [2, 7, 30, 365, null]) {
+  // One entry per movie (its latest verdict). Widen the window until there are enough movies.
+  for (const days of [7, 30, 365, null]) {
     const since = days ? new Date(Date.now() - days * 86_400_000).toISOString() : null;
-    const items = await fetchVerdicts(since, filter, limit);
-    if (items.length >= 12 || days === null) return items.slice(0, limit);
+    const rows = await fetchVerdicts(since, filter, 400);
+    const items = groupByMovie(rows).filter(v => !excludeMovieIds.includes(v.movieId));
+    if (items.length >= Math.min(limit, 12) || days === null) return items.slice(0, limit);
   }
   return [];
+}
+
+function groupByMovie(rows: VerdictItem[]): VerdictItem[] {
+  const byMovie = new Map<number, VerdictItem>();
+  for (const r of rows) {
+    const g = byMovie.get(r.movieId);
+    if (g) {
+      g.criticCount += 1;
+      g.recCount += r.recommend ? 1 : 0;
+    } else {
+      byMovie.set(r.movieId, { ...r, criticCount: 1, recCount: r.recommend ? 1 : 0 });
+    }
+  }
+  return [...byMovie.values()];
 }
 
 async function fetchVerdicts(since: string | null, filter: VerdictFilter, limit: number): Promise<VerdictItem[]> {
@@ -50,7 +68,6 @@ async function fetchVerdicts(since: string | null, filter: VerdictFilter, limit:
     .limit(limit);
 
   if (since) query = (query as any).gte('posted_at', since);
-
   if (filter === 'recommend') query = (query as any).eq('recommend', true);
   if (filter === 'skip')      query = (query as any).eq('recommend', false);
   if (filter.startsWith('channel:')) {
@@ -78,6 +95,8 @@ function mapRow(r: any): VerdictItem {
     creatorName:     creator?.name   ?? 'Unknown',
     creatorHandle:   creator?.handle ?? null,
     creatorAvatarUrl:creator?.avatar_url ?? null,
+    criticCount:     1,
+    recCount:        r.recommend ? 1 : 0,
   };
 }
 

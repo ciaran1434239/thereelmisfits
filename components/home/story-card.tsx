@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Play } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 
 const HEADLINE = 'var(--font-headline), Georgia, serif';
 
@@ -13,17 +13,21 @@ interface StoryCardProps {
   meta?: string;
   quote?: string | null;
   poster?: string | null;
+  verdict?: boolean;
   size?: 'lg' | 'md';
 }
 
-export function StoryCard({ href, image, imageHref, title, label, labelColor, meta, quote, poster, size = 'md' }: StoryCardProps) {
+export function StoryCard({ href, image, imageHref, title, label, labelColor, meta, quote, poster, verdict, size = 'md' }: StoryCardProps) {
   const lg = size === 'lg';
   const img = (
     <div className="relative overflow-hidden" style={{ aspectRatio: '16/9', background: '#E8E8E8' }}>
       {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />}
-      {imageHref && (
-        <span className="absolute bottom-3 left-3 w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-sm text-[#111] shadow-md">
-          <Play size={14} fill="currentColor" />
+      {imageHref && verdict !== undefined && (
+        <span
+          className="absolute bottom-3 left-3 w-11 h-11 flex items-center justify-center text-white -rotate-6 transition-transform group-hover:rotate-0 group-hover:scale-110"
+          style={{ background: verdict ? '#1E8E3E' : '#C8201F', border: '3px solid #fff', boxShadow: '0 3px 10px rgba(0,0,0,0.45)' }}
+        >
+          {verdict ? <Check size={24} strokeWidth={4} /> : <X size={24} strokeWidth={4} />}
         </span>
       )}
       {poster && (
