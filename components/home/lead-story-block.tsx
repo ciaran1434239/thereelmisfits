@@ -58,14 +58,14 @@ export async function LeadStoryBlock() {
     <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
 
-        <Link href={href} className="lg:col-span-7 block overflow-hidden" style={{ background: '#E4DFD3' }}>
+        <Link href={href} className="lg:col-span-7 block" style={{ background: '#E4DFD3', boxShadow: '8px 8px 0 0 #C8201F', border: '2px solid #151515' }}>
           <div style={{ aspectRatio: '16/9' }}>
             {image && <img src={image} alt={story.movieTitle} className="w-full h-full object-cover" />}
           </div>
         </Link>
 
         <div className="lg:col-span-5 flex flex-col gap-5">
-          <p className="text-[12px] font-bold uppercase tracking-[0.18em]" style={{ color: '#C8201F' }}>
+          <p className="self-start -rotate-2 px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.18em] text-white" style={{ background: '#C8201F', boxShadow: '3px 3px 0 0 #151515' }}>
             {KICKER[story.mode]}
           </p>
 

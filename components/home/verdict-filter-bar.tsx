@@ -34,7 +34,7 @@ export function VerdictFilterBar({ currentFilter }: { currentFilter: string }) {
             onClick={() => setFilter(f.value)}
             className="text-[13px] font-bold pb-1 transition-colors"
             style={{
-              color: active ? '#151515' : '#8A8578',
+              color: active ? '#151515' : '#5F5A50',
               borderBottom: active ? '2px solid #C8201F' : '2px solid transparent',
             }}
           >

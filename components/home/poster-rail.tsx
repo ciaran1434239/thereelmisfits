@@ -22,12 +22,12 @@ export async function PosterRail() {
     <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-14 sm:pt-20">
       <SectionTitle title="Most Reviewed This Month" href={'/movies' as any} hrefLabel="All movies" />
 
-      <div className="grid grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mt-6">
+      <div className="grid grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mt-8">
         {films.map((f, i) => (
           <Link key={f.movieId} href={`/movie/${f.movieId}` as any} className="group block">
-            <div className="overflow-hidden" style={{ aspectRatio: '2/3', background: '#E4DFD3' }}>
+            <div className="overflow-hidden transition-all duration-150 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 group-hover:shadow-[4px_4px_0_0_#C8201F]" style={{ aspectRatio: '2/3', background: '#E4DFD3', border: '1px solid #151515' }}>
               {posters[i] && (
-                <img src={posters[i]!} alt={f.movieTitle} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-200" />
+                <img src={posters[i]!} alt={f.movieTitle} className="w-full h-full object-cover " />
               )}
             </div>
             <p

@@ -2,6 +2,15 @@ import Link from 'next/link';
 import { VerdictStamp } from '@/components/ui/verdict-stamp';
 import { YTThumb }      from '@/components/ui/yt-thumb';
 import { getVerdictsFeed } from '@/lib/data/verdicts-feed';
+
+const TMDB_KEY = process.env.TMDB_API_KEY;
+
+async function fetchPoster(id: number): Promise<string | null> {
+  if (!TMDB_KEY) return null;
+  const d = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_KEY}`, { next: { revalidate: 3600 } })
+    .then(r => (r.ok ? r.json() : null)).catch(() => null);
+  return d?.poster_path ? `https://image.tmdb.org/t/p/w154${d.poster_path}` : null;
+}
 import type { VerdictItem, VerdictFilter } from '@/lib/data/verdicts-feed';
 
 function formatDate(iso: string): string {
@@ -22,14 +31,14 @@ function Avatar({ src, name }: { src: string | null; name: string }) {
   );
 }
 
-function VerdictCard({ item }: { item: VerdictItem }) {
+function VerdictCard({ item, poster }: { item: VerdictItem; poster: string | null }) {
   const text = item.verdictShort
     ?? (item.snippet ? item.snippet.slice(0, 180) + (item.snippet.length > 180 ? '…' : '') : null);
 
   return (
-    <article className="flex flex-col bg-white transition-colors hover:border-[#151515]" style={{ border: '1px solid #DDD8CC' }}>
+    <article className="group/card flex flex-col bg-white transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:border-[#151515] hover:shadow-[5px_5px_0_0_#C8201F]" style={{ border: '1px solid #151515' }}>
       {item.youtubeVideoId ? (
-        <YTThumb videoId={item.youtubeVideoId} title={item.movieTitle} />
+        <YTThumb videoId={item.youtubeVideoId} title={item.movieTitle} poster={poster} />
       ) : (
         <div style={{ aspectRatio: '16/9', background: '#E4DFD3' }} />
       )}
@@ -71,7 +80,7 @@ function VerdictCard({ item }: { item: VerdictItem }) {
           ) : (
             <span className="text-[12px] font-bold line-clamp-1" style={{ color: '#151515' }}>{item.creatorName}</span>
           )}
-          <time dateTime={item.postedAt} className="ml-auto text-[12px] shrink-0" style={{ color: '#8A8578' }}>
+          <time dateTime={item.postedAt} className="ml-auto text-[12px] shrink-0" style={{ color: '#5F5A50' }}>
             {formatDate(item.postedAt)}
           </time>
         </div>
@@ -94,9 +103,12 @@ export async function VerdictsWall({ filter = 'all' }: { filter?: VerdictFilter 
     );
   }
 
+  const ids = [...new Set(verdicts.map(v => v.movieId))];
+  const posters = new Map(await Promise.all(ids.map(async id => [id, await fetchPoster(id)] as const)));
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-      {verdicts.map(item => <VerdictCard key={item.reviewId} item={item} />)}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {verdicts.map(item => <VerdictCard key={item.reviewId} item={item} poster={posters.get(item.movieId) ?? null} />)}
     </div>
   );
 }
