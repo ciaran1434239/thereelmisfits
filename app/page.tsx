@@ -20,11 +20,11 @@ export default async function HomePage({
     : 'all';
 
   const [latest, filtered] = await Promise.all([
-    getVerdictsFeed('all', 28),
-    safeFilter === 'all' ? Promise.resolve(null) : getVerdictsFeed(safeFilter, 27),
+    getVerdictsFeed('all', 27),
+    safeFilter === 'all' ? Promise.resolve(null) : getVerdictsFeed(safeFilter, 24),
   ]);
-  const justIn = latest.slice(0, 4);
-  const wall   = filtered ?? latest.slice(4);
+  const justIn = latest.slice(0, 3);
+  const wall   = filtered ?? latest.slice(3);
 
   return (
     <div className="w-full pb-28">

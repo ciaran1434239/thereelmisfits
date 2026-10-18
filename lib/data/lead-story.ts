@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { unstable_cache } from 'next/cache';
+import { getFeaturedMovieId } from '@/lib/data/featured-movie';
 
 export interface ReviewDigest {
   creatorName: string;
@@ -9,7 +10,7 @@ export interface ReviewDigest {
 }
 
 export interface LeadStoryFilm {
-  mode: 'pinned' | 'fight' | 'consensus';
+  mode: 'pinned' | 'release' | 'fight' | 'consensus';
   movieId: number;
   movieTitle: string;
   reviewCount: number;
@@ -21,7 +22,7 @@ export interface LeadStoryFilm {
 
 // ── Fallback ladder ──────────────────────────────────────────────────────────
 
-async function resolveLeadStory(): Promise<LeadStoryFilm | null> {
+async function resolveLeadStory(featuredId: number | null): Promise<LeadStoryFilm | null> {
   // 1. Editorial pin — valid if pinned_until is in the future
   const { data: pin } = await supabase
     .from('editorial_pins')
@@ -50,15 +51,35 @@ async function resolveLeadStory(): Promise<LeadStoryFilm | null> {
     }
   }
 
-  // 2. Fight — films with ≥4 reviews in last 7 days, best split
+  // 2. The big release of the week
+  if (featuredId) {
+    const { data: movie } = await supabase.from('movies').select('id, title').eq('id', featuredId).single();
+    if (movie) {
+      const digest = await getReviewDigest(movie.id);
+      if (digest.total > 0) {
+        return {
+          mode: 'release',
+          movieId: movie.id,
+          movieTitle: movie.title,
+          reviewCount: digest.total,
+          pctPositive: digest.pctPositive,
+          headline: null,
+          proReviews: digest.proReviews,
+          conReviews: digest.conReviews,
+        };
+      }
+    }
+  }
+
+  // 3. Fight — films with ≥4 reviews in last 7 days, best split
   const fight7 = await findFightFilm(7);
   if (fight7) return fight7;
 
-  // 3. Fight — widen to 14 days
+  // 4. Fight — widen to 14 days
   const fight14 = await findFightFilm(14);
   if (fight14) return fight14;
 
-  // 4. Consensus — most reviewed film in last 14 days
+  // 5. Consensus — most reviewed film in last 14 days
   return findConsensusFilm();
 }
 
@@ -167,7 +188,7 @@ async function getReviewDigest(movieId: number) {
     .eq('movie_id', movieId)
     .not('recommend', 'is', null)
     .order('posted_at', { ascending: false })
-    .limit(8);
+    .limit(300);
 
   const rows = data ?? [];
   const total = rows.length;
@@ -191,4 +212,9 @@ async function getReviewDigest(movieId: number) {
   };
 }
 
-export const getLeadStory = unstable_cache(resolveLeadStory, ['lead-story'], { revalidate: 1800 });
+const cachedLeadStory = unstable_cache(resolveLeadStory, ['lead-story'], { revalidate: 1800 });
+
+export async function getLeadStory(): Promise<LeadStoryFilm | null> {
+  const featuredId = await getFeaturedMovieId();
+  return cachedLeadStory(featuredId);
+}
