@@ -86,10 +86,10 @@ function Chart({ title, caption, rows, more }: { title: string; caption: string;
       <ol>
         {rows.map(r => (
           <li key={`${r.rank}-${r.title}`} style={{ borderBottom: '1px solid #E4E4E4' }}>
-            <Link href={r.href} className="group flex items-center gap-4 py-3.5">
+            <Link href={r.href} className="group flex items-center gap-4 h-[68px]">
               <span style={{ fontFamily: DISPLAY, fontSize: '2.1rem', lineHeight: 1, width: '1.6rem', color: r.rank === 1 ? '#C8201F' : '#111' }}>{r.rank}</span>
               <span className="flex-1 min-w-0">
-                <span className="block line-clamp-1 group-hover:underline underline-offset-2" style={{ fontFamily: HEADLINE, fontWeight: 700, fontSize: '1.05rem', lineHeight: 1.25, color: '#111' }}>{r.title}</span>
+                <span className="block truncate group-hover:underline underline-offset-2" style={{ fontFamily: HEADLINE, fontWeight: 700, fontSize: '1.05rem', lineHeight: 1.25, color: '#111' }}>{r.title}</span>
                 {r.note && <span className="block uppercase" style={{ fontFamily: DISPLAY, fontSize: '0.95rem', letterSpacing: '0.06em', color: '#555' }}>{r.note}</span>}
               </span>
               {r.value && <span className="shrink-0 uppercase" style={{ fontFamily: DISPLAY, fontSize: '1.3rem', letterSpacing: '0.04em', color: '#111' }}>{r.value}</span>}
@@ -98,11 +98,13 @@ function Chart({ title, caption, rows, more }: { title: string; caption: string;
         ))}
       </ol>
 
-      {more && (
-        <Link href={more.href} className="inline-block mt-4 text-[13px] font-bold uppercase tracking-[0.1em] hover:underline underline-offset-4" style={{ color: '#C8201F' }}>
-          {more.label} &rarr;
-        </Link>
-      )}
+      <div className="mt-4 h-5">
+        {more && (
+          <Link href={more.href} className="text-[13px] font-bold uppercase tracking-[0.1em] hover:underline underline-offset-4" style={{ color: '#C8201F' }}>
+            {more.label} &rarr;
+          </Link>
+        )}
+      </div>
     </div>
   );
 }
