@@ -4,6 +4,7 @@ import { VerdictFilterBar }   from '@/components/home/verdict-filter-bar';
 import { VerdictsWall }       from '@/components/home/verdicts-wall';
 import { PosterRail }         from '@/components/home/poster-rail';
 import { SectionTitle }       from '@/components/home/section-title';
+import { ChartsTrio }         from '@/components/home/charts-trio';
 import { getVerdictsFeed }    from '@/lib/data/verdicts-feed';
 import { getLeadStory }       from '@/lib/data/lead-story';
 import type { VerdictFilter } from '@/lib/data/verdicts-feed';
@@ -37,6 +38,10 @@ export default async function HomePage({
 
       <Suspense fallback={null}>
         <PosterRail />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ChartsTrio />
       </Suspense>
 
       <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-24 sm:pt-32">
