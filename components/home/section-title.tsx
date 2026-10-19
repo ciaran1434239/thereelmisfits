@@ -6,11 +6,12 @@ interface SectionTitleProps {
   href?: any;
   hrefLabel?: string;
   below?: ReactNode;
+  align?: 'center' | 'left';
 }
 
-export function SectionTitle({ title, href, hrefLabel, below }: SectionTitleProps) {
+export function SectionTitle({ title, href, hrefLabel, below, align = 'center' }: SectionTitleProps) {
   return (
-    <div className="flex flex-col items-center gap-4 text-center">
+    <div className={`flex flex-col gap-4 ${align === 'center' ? 'items-center text-center' : 'items-start text-left'}`}>
       <h2
         style={{
           fontFamily: 'var(--font-headline), Georgia, serif',

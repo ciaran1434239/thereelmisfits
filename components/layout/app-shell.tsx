@@ -14,7 +14,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div
-      className={light ? 'shell-light' : ''}
+      className={`min-h-screen ${light ? 'shell-light' : ''}`}
       style={{ '--shell-bg': bg, backgroundColor: bg } as CSSProperties}
     >
       <Header />

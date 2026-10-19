@@ -266,7 +266,7 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
 
             {/* ── Verdicts ─────────────────────────────────────────────────── */}
             <section>
-              <SectionTitle title={`The verdicts (${totalReviews})`} />
+              <SectionTitle title={`The verdicts (${totalReviews})`} align="left" />
 
               {totalReviews === 0 ? (
                 <p className="py-12 text-center text-[16px]" style={{ color: '#555' }}>No reviews synced yet.</p>

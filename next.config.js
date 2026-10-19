@@ -13,6 +13,9 @@ const path = require('path');
 const nextConfig = {
   reactStrictMode: true,
 
+  // The Claude preview server sets NEXT_DIST_DIR so it never shares .next with a dev server you run yourself.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
+
   // Force all webpack modules to use Next.js's bundled React (canary).
   // Without this, stable react 19.2.6 is used, which mismatches with
   // react-server-dom-webpack/client (which uses canary internals), causing
