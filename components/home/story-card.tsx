@@ -10,21 +10,17 @@ interface StoryCardProps {
   label: string;
   meta?: string;
   quote?: string | null;
-  poster?: string | null;
   verdict?: boolean;
   size?: 'lg' | 'md';
 }
 
-export function StoryCard({ href, image, title, label, meta, quote, poster, verdict, size = 'md' }: StoryCardProps) {
+export function StoryCard({ href, image, title, label, meta, quote, verdict, size = 'md' }: StoryCardProps) {
   const lg = size === 'lg';
   const img = (
     <div className="relative overflow-hidden" style={{ aspectRatio: '16/9', background: '#E8E8E8', border: '1px solid #111' }}>
-      {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />}
+      {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]" />}
       {verdict !== undefined && (
         <span className="absolute bottom-2 left-2"><TicketStub admit={verdict} className="transition-transform group-hover:rotate-0 group-hover:scale-105" /></span>
-      )}
-      {poster && (
-        <img src={poster} alt="" className="absolute bottom-3 right-3 w-[54px] object-cover" style={{ aspectRatio: '2/3', border: '3px solid #fff', boxShadow: '0 3px 10px rgba(0,0,0,0.4)' }} />
       )}
     </div>
   );

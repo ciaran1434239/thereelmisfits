@@ -1,5 +1,5 @@
 import { StoryCard } from '@/components/home/story-card';
-import { fetchPoster } from '@/lib/data/tmdb-poster';
+import { fetchBackdrop } from '@/lib/data/tmdb-poster';
 import type { VerdictItem } from '@/lib/data/verdicts-feed';
 
 export function formatDate(iso: string): string {
@@ -16,19 +16,18 @@ export function quoteOf(item: VerdictItem, max = 160): string | null {
   return t.length > max ? t.slice(0, max).trimEnd() + '…' : t;
 }
 
-export function VerdictCard({ item, poster, size = 'md' }: { item: VerdictItem; poster: string | null; size?: 'lg' | 'md' }) {
+export function VerdictCard({ item, image, size = 'md' }: { item: VerdictItem; image: string | null; size?: 'lg' | 'md' }) {
   // One rule for every card: the label is the consensus verdict, the grey line is who + how many.
   const good = item.scoredCount ? item.recCount / item.scoredCount >= 0.5 : item.recommend;
   return (
     <StoryCard
       size={size}
       href={`/movie/${item.movieId}`}
-      image={item.youtubeVideoId ? `https://i.ytimg.com/vi/${item.youtubeVideoId}/${size === 'lg' ? 'hqdefault' : 'mqdefault'}.jpg` : null}
+      image={image}
       title={item.movieTitle}
       quote={quoteOf(item, size === 'lg' ? 200 : 140)}
       label={good ? 'Recommends' : 'Skips it'}
       meta={`${item.creatorName} · ${item.criticCount} ${item.criticCount === 1 ? 'review' : 'reviews'}`}
-      poster={poster}
       verdict={good}
     />
   );
@@ -48,11 +47,11 @@ export async function VerdictsWall({ items }: { items: VerdictItem[] }) {
   if (items.length >= 3) items = items.slice(0, Math.floor(items.length / 3) * 3);
 
   const ids = [...new Set(items.map(v => v.movieId))];
-  const posters = new Map(await Promise.all(ids.map(async id => [id, await fetchPoster(id)] as const)));
+  const images = new Map(await Promise.all(ids.map(async id => [id, await fetchBackdrop(id)] as const)));
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
-      {items.map(item => <VerdictCard key={item.reviewId} item={item} poster={posters.get(item.movieId) ?? null} />)}
+      {items.map(item => <VerdictCard key={item.reviewId} item={item} image={images.get(item.movieId) ?? null} />)}
     </div>
   );
 }

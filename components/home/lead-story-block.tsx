@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { getLeadStory } from '@/lib/data/lead-story';
 import type { ReviewDigest } from '@/lib/data/lead-story';
 import type { VerdictItem } from '@/lib/data/verdicts-feed';
-import { fetchPoster } from '@/lib/data/tmdb-poster';
+import { fetchBackdrop } from '@/lib/data/tmdb-poster';
 import { VerdictCard } from '@/components/home/verdicts-wall';
 
 const TMDB_KEY = process.env.TMDB_API_KEY;
@@ -38,8 +38,8 @@ function Quote({ review, side }: { review: ReviewDigest; side: 'pro' | 'con' }) 
 
 export async function LeadStoryBlock({ justIn }: { justIn: VerdictItem[] }) {
   const story = await getLeadStory();
-  const posters = new Map(
-    await Promise.all(justIn.map(async v => [v.movieId, await fetchPoster(v.movieId)] as const)),
+  const images = new Map(
+    await Promise.all(justIn.map(async v => [v.movieId, await fetchBackdrop(v.movieId)] as const)),
   );
 
   const tmdb = story ? await fetchTmdbDetails(story.movieId) : null;
@@ -90,7 +90,7 @@ export async function LeadStoryBlock({ justIn }: { justIn: VerdictItem[] }) {
 
       {justIn.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-12 mt-16">
-          {justIn.map(v => <VerdictCard key={v.reviewId} item={v} poster={posters.get(v.movieId) ?? null} />)}
+          {justIn.map(v => <VerdictCard key={v.reviewId} item={v} image={images.get(v.movieId) ?? null} />)}
         </div>
       )}
     </section>
