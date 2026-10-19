@@ -9,7 +9,6 @@ interface StoryCardProps {
   imageHref?: string;
   title: string;
   label: string;
-  labelColor: string;
   meta?: string;
   quote?: string | null;
   poster?: string | null;
@@ -17,7 +16,7 @@ interface StoryCardProps {
   size?: 'lg' | 'md';
 }
 
-export function StoryCard({ href, image, imageHref, title, label, labelColor, meta, quote, poster, verdict, size = 'md' }: StoryCardProps) {
+export function StoryCard({ href, image, imageHref, title, label, meta, quote, poster, verdict, size = 'md' }: StoryCardProps) {
   const lg = size === 'lg';
   const img = (
     <div className="relative overflow-hidden" style={{ aspectRatio: '16/9', background: '#E8E8E8' }}>
@@ -55,9 +54,8 @@ export function StoryCard({ href, image, imageHref, title, label, labelColor, me
             &ldquo;{quote}&rdquo;
           </p>
         )}
-        <p className="text-[13px] tracking-wide">
-          <span className="font-bold uppercase" style={{ color: labelColor }}>{label}</span>
-          {meta && <span style={{ color: '#555' }}> | {meta}</span>}
+        <p className="uppercase" style={{ fontFamily: 'var(--font-display), Impact, sans-serif', fontSize: '1.05rem', letterSpacing: '0.06em', lineHeight: 1.2, color: '#111' }}>
+          {label}{meta && <> <span style={{ color: '#C8201F' }}>/</span> {meta}</>}
         </p>
       </div>
     </article>

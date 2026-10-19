@@ -24,15 +24,13 @@ const KICKER: Record<string, string> = {
 };
 
 function Quote({ review, side }: { review: ReviewDigest; side: 'pro' | 'con' }) {
-  const color = side === 'pro' ? '#1E8E3E' : '#C8201F';
   return (
     <div>
       <p className="italic text-[19px] leading-relaxed line-clamp-3" style={{ fontFamily: HEADLINE, color: '#222' }}>
         &ldquo;{review.snippet}&rdquo;
       </p>
-      <p className="mt-2 text-[13px] tracking-wide">
-        <span className="font-bold uppercase" style={{ color }}>{side === 'pro' ? 'Recommends' : 'Skips it'}</span>
-        <span style={{ color: '#555' }}> | {review.creatorName}</span>
+      <p className="mt-2 uppercase" style={{ fontFamily: 'var(--font-display), Impact, sans-serif', fontSize: '1.05rem', letterSpacing: '0.06em', color: '#111' }}>
+        {side === 'pro' ? 'Recommends' : 'Skips it'} <span style={{ color: '#C8201F' }}>/</span> {review.creatorName}
       </p>
     </div>
   );
@@ -64,9 +62,8 @@ export async function LeadStoryBlock({ justIn }: { justIn: VerdictItem[] }) {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-8 mt-6">
             <div className="lg:col-span-6 flex flex-col gap-3">
-              <p className="text-[13px] tracking-wide">
-                <span className="font-bold uppercase" style={{ color: '#C8201F' }}>{KICKER[story.mode] ?? ''}</span>
-                <span style={{ color: '#555' }}> | {story.pctPositive}% of {story.reviewCount} critics recommend</span>
+              <p className="uppercase" style={{ fontFamily: 'var(--font-display), Impact, sans-serif', fontSize: '1.15rem', letterSpacing: '0.06em', color: '#111' }}>
+                <span style={{ color: '#C8201F' }}>{KICKER[story.mode] ?? ''}</span> / {story.pctPositive}% of {story.reviewCount} critics recommend
               </p>
               <Link href={href}>
                 <h1

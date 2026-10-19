@@ -22,7 +22,7 @@ const bitter = Bitter({
 });
 
 const playfair = Playfair_Display({
-  weight: ['600', '700', '800'],
+  style: ['normal', 'italic'],
   subsets: ['latin'],
   variable: '--font-headline',
   display: 'swap',

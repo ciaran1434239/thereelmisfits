@@ -29,7 +29,6 @@ export function VerdictCard({ item, poster, size = 'md' }: { item: VerdictItem; 
       title={item.movieTitle}
       quote={quoteOf(item, size === 'lg' ? 200 : 140)}
       label={many ? `${pct}% recommend` : item.recommend ? 'Recommends' : 'Skips it'}
-      labelColor={good ? '#1E8E3E' : '#C8201F'}
       meta={many ? `${item.criticCount} critics · Latest: ${item.creatorName}` : `${item.creatorName} · ${formatDate(item.postedAt)}`}
       poster={poster}
       verdict={good}

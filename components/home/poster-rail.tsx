@@ -22,7 +22,7 @@ export async function PosterRail() {
               {f.movieTitle}
             </p>
             <p className="text-[12px] mt-0.5" style={{ color: '#555' }}>
-              <span className="font-bold" style={{ color: f.pctPositive >= 50 ? '#1E8E3E' : '#C8201F' }}>{f.pctPositive}%</span>
+              <span className="font-bold" style={{ color: '#111' }}>{f.pctPositive}%</span>
               {' '}· {f.reviewCount} reviews
             </p>
           </Link>

@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Search, Menu, X, LogIn, LogOut, User, ChevronDown, Film, Tv } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import { Masthead } from './masthead';
 import { useAuth } from '@/lib/context/auth-context';
 
 interface SearchResult {
@@ -192,6 +193,7 @@ export function Header() {
   const searchRef  = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
+  const isHome = usePathname() === '/';
   const { user, loading, signInWithGoogle, signOut } = useAuth();
 
   useEffect(() => {
@@ -242,10 +244,13 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 w-full z-50 bg-[var(--shell-bg)]">
+    <>
+    {isHome && <Masthead />}
+    <header className={`sticky top-0 w-full z-50 bg-[var(--shell-bg)] ${isHome ? 'border-y border-[#111]' : ''}`}>
       <div className="max-w-[1140px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 xl:gap-8 py-3">
 
         {/* ── LOGO ─────────────────────────────────────────────── */}
+        {!isHome && (
         <Link href="/" className="shrink-0 group flex items-center gap-3">
           {/* YouTube-style play button */}
           <div className="w-9 h-7 bg-[#C8201F] rounded-md flex items-center justify-center shrink-0 group-hover:bg-[#A01818] transition-colors">
@@ -266,6 +271,7 @@ export function Header() {
             </span>
           </div>
         </Link>
+        )}
 
         {/* ── DESKTOP NAV ──────────────────────────────────────── */}
         <nav className="hidden lg:flex items-center gap-7 xl:gap-10">
@@ -275,7 +281,7 @@ export function Header() {
         </nav>
 
         {/* ── SEARCH + AUTH ─────────────────────────────────────── */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 ml-auto">
 
           {/* Search */}
           <div ref={searchRef} className="relative hidden md:block">
@@ -436,5 +442,6 @@ export function Header() {
         </div>
       )}
     </header>
+    </>
   );
 }
