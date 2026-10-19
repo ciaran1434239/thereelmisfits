@@ -251,3 +251,49 @@ export function pickSnippet(rawDesc: string): string | null {
   if (lastSentence > 80) return cut.substring(0, lastSentence + 1);
   return cut.replace(/\s+\S*$/, '') + '…';
 }
+
+// ── Same-title disambiguation (remakes, reboots) ──────────────────────────────
+
+interface TmdbHit {
+  title?: string;
+  name?: string;
+  release_date?: string;
+  first_air_date?: string;
+  popularity?: number;
+}
+
+const normTitle = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+/**
+ * TMDB title searches return old and new versions of the same name ("Sense and
+ * Sensibility" 1995 and 2026). Picking result #1 files new reviews under whichever
+ * ranks first. Instead, among same-titled hits:
+ *   1. a year in the video title wins ("Dune (1984) review");
+ *   2. otherwise the most recent real version already out (or ≤14 days from release)
+ *      when the video was published. Tiny shorts/fan films are ignored by requiring
+ *      ≥25% of the best hit's popularity.
+ * Falls back to the top result when there is nothing to disambiguate.
+ */
+export function pickBestByRelease<T extends TmdbHit>(results: T[], videoTitle: string, publishedAt: string | Date): T | null {
+  const top = results[0];
+  if (!top) return null;
+
+  const topName = normTitle(top.title ?? top.name ?? '');
+  const dateOf = (r: T) => new Date(r.release_date ?? r.first_air_date ?? '').getTime();
+  const same = results.filter(r => normTitle(r.title ?? r.name ?? '') === topName && !Number.isNaN(dateOf(r)));
+  if (same.length < 2) return top;
+
+  const yearInTitle = videoTitle.match(/\b(19\d{2}|20\d{2})\b/);
+  if (yearInTitle) {
+    const hit = same.find(r => new Date(dateOf(r)).getUTCFullYear() === Number(yearInTitle[1]));
+    if (hit) return hit;
+  }
+
+  const maxPop = Math.max(...same.map(r => r.popularity ?? 0));
+  const real = same.filter(r => (r.popularity ?? 0) >= maxPop * 0.25);
+  const published = new Date(publishedAt).getTime();
+  const outByThen = real.filter(r => dateOf(r) <= published + 14 * 86_400_000);
+  if (!outByThen.length) return top;
+
+  return outByThen.reduce((best, r) => (dateOf(r) > dateOf(best) ? r : best));
+}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { isBlocklisted, extractSeason, pickSnippet, isAvailableForReview } from '@/lib/sync-helpers';
+import { isBlocklisted, extractSeason, pickSnippet, isAvailableForReview, pickBestByRelease } from '@/lib/sync-helpers';
 
 export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
@@ -146,6 +146,8 @@ async function findOnTmdb(
   title: string,
   preferredType: 'movie' | 'tv',
   tmdbKey: string,
+  videoTitle: string,
+  publishedAt: string,
 ): Promise<(any & { actualType: 'movie' | 'tv' }) | null> {
   // Use type-specific endpoints — avoids cross-contamination where a movie
   // query returns a TV documentary with a similar name (e.g. "A Special Look" shorts)
@@ -156,7 +158,7 @@ async function findOnTmdb(
       { next: { revalidate: 86400 } },
     );
     if (!res.ok) return null;
-    const hit = ((await res.json()).results ?? [])[0] ?? null;
+    const hit = pickBestByRelease((await res.json()).results ?? [], videoTitle, publishedAt);
     return hit ? { ...hit, actualType: type } : null;
   };
 
@@ -300,7 +302,7 @@ export async function GET(req: NextRequest) {
 
         // Find it on TMDB — multi-search returns the actual media_type so we
         // aren't locked into what the AI guessed.
-        const tmdb = await findOnTmdb(classification.contentTitle, classification.contentType as 'movie' | 'tv', TMDB_KEY);
+        const tmdb = await findOnTmdb(classification.contentTitle, classification.contentType as 'movie' | 'tv', TMDB_KEY, vTitle, video.snippet.publishedAt);
         if (!tmdb) {
           console.log(`  ? no TMDB match for "${classification.contentTitle}" (${classification.contentType})`);
           skippedNoTmdb++;
