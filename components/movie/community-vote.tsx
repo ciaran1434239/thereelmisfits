@@ -93,12 +93,13 @@ export function CommunityVote({ movieId, initialVotes, compact = false }: Props)
 
   if (compact) {
     return (
-      <div className="rounded-xl p-4 text-center bg-[#181818] border border-[#2A2A2A] flex flex-col items-center justify-center gap-1">
-        <div className="text-3xl font-black leading-none text-white">
+      <div className="flex flex-col gap-1">
+        <div style={{ fontFamily: 'var(--font-display), Impact, sans-serif', fontSize: '3.5rem', lineHeight: 0.9, color: '#111' }}>
           {pct === null ? '—' : `${pct}%`}
         </div>
-        <div className="text-[8px] font-black uppercase tracking-widest text-[#777777]">Community</div>
-        <div className="text-[8px] font-bold text-[#777777]">{total} {total === 1 ? 'vote' : 'votes'}</div>
+        <div className="uppercase" style={{ fontFamily: 'var(--font-display), Impact, sans-serif', fontSize: '1.05rem', letterSpacing: '0.06em', color: '#555' }}>
+          Community / {total} {total === 1 ? 'vote' : 'votes'}
+        </div>
       </div>
     );
   }

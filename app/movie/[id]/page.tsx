@@ -1,11 +1,17 @@
 export const dynamic = 'force-dynamic';
 
 import { notFound } from 'next/navigation';
-import { ArrowUpRight, ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { tileClasses } from '@/lib/utils/score-tier';
+import { getScoreTier } from '@/lib/utils/score-tier';
 import { CommunityVote } from '@/components/movie/community-vote';
-import { AvatarImg } from '@/components/ui/avatar-img';
+import { AvatarPlain } from '@/components/ui/avatar-plain';
+import { TicketStub } from '@/components/ui/ticket-stub';
+import { SectionTitle } from '@/components/home/section-title';
+
+const HEADLINE = 'var(--font-headline), Georgia, serif';
+const DISPLAY  = 'var(--font-display), Impact, sans-serif';
+const TIER_COLOR = { recommend: '#16803A', okay: '#B7791F', pass: '#C8201F' } as const;
 
 // Platform brand colours keyed by TMDB provider_id
 const PLATFORM_STYLES: Record<number, { name: string; bg: string; text: string }> = {
@@ -136,176 +142,108 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
   const budget = tmdb.budget > 100000 ? fmtMoney(tmdb.budget) : null;
   const revenue = tmdb.revenue > 100000 ? fmtMoney(tmdb.revenue) : null;
 
-  return (
-    <div className="min-h-screen">
+  const tierColor = recPct !== null ? TIER_COLOR[getScoreTier(recPct)] : '#555';
 
-      {/* ── BACKDROP HERO — purely atmospheric, no text overlay ─────────────── */}
-      <div className="relative w-full h-[240px] sm:h-[300px] overflow-hidden bg-[#111]">
-        {tmdb.backdrop_path ? (
-          <img
-            src={`https://image.tmdb.org/t/p/w1280${tmdb.backdrop_path}`}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 w-full h-full object-cover object-[center_20%] opacity-35"
-          />
-        ) : tmdb.poster_path ? (
-          <img
-            src={`https://image.tmdb.org/t/p/w780${tmdb.poster_path}`}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 w-full h-full object-cover object-top opacity-20 blur-sm"
-          />
-        ) : null}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F0F] via-[#0F0F0F]/20 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
+  const Detail = ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <div className="py-3" style={{ borderBottom: '1px solid #E4E4E4' }}>
+      <p className="uppercase" style={{ fontFamily: DISPLAY, fontSize: '1rem', letterSpacing: '0.07em', color: '#555' }}>{label}</p>
+      <div className="text-[15px] leading-snug mt-0.5" style={{ color: '#111' }}>{children}</div>
+    </div>
+  );
+
+  return (
+    <div className="pb-24">
+
+      {/* ── Backdrop ───────────────────────────────────────────────────────── */}
+      {(tmdb.backdrop_path || tmdb.poster_path) && (
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-8 sm:pt-10">
+          <div className="relative overflow-hidden" style={{ aspectRatio: '21/9', background: '#E8E8E8', border: '1px solid #111' }}>
+            <img
+              src={tmdb.backdrop_path ? `https://image.tmdb.org/t/p/w1280${tmdb.backdrop_path}` : `https://image.tmdb.org/t/p/w780${tmdb.poster_path}`}
+              alt={tmdb.title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ── Title + scores ─────────────────────────────────────────────────── */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-8 items-end">
+          <div className="lg:col-span-8">
+            <p className="uppercase" style={{ fontFamily: DISPLAY, fontSize: '1.15rem', letterSpacing: '0.06em', color: '#111' }}>
+              <span style={{ color: '#C8201F' }}>{tmdb.genres?.slice(0, 2).map((g: any) => g.name).join(' / ') || 'Film'}</span>
+              {releaseYear && <> / {releaseYear}</>}
+              {tmdb.runtime > 0 && <> / {tmdb.runtime} min</>}
+            </p>
+            <h1 className="mt-2" style={{ fontFamily: HEADLINE, fontWeight: 700, fontSize: 'clamp(2.5rem, 5.5vw, 4.5rem)', lineHeight: 1.03, color: '#111' }}>
+              {tmdb.title}
+            </h1>
+            {tmdb.director && (
+              <p className="mt-3 uppercase" style={{ fontFamily: DISPLAY, fontSize: '1.15rem', letterSpacing: '0.06em', color: '#555' }}>
+                Directed by <span style={{ color: '#111' }}>{tmdb.director}</span>
+              </p>
+            )}
+          </div>
+
+          <div className="lg:col-span-4 grid grid-cols-2 gap-6">
+            <div className="flex flex-col gap-1">
+              <div style={{ fontFamily: DISPLAY, fontSize: '3.5rem', lineHeight: 0.9, color: tierColor }}>
+                {recPct !== null ? `${recPct}%` : '?'}
+              </div>
+              <div className="uppercase" style={{ fontFamily: DISPLAY, fontSize: '1.05rem', letterSpacing: '0.06em', color: '#555' }}>
+                {isPending
+                  ? `Pending / ${scoredReviews.length} of ${MIN_REVIEWS} scored`
+                  : `YouTube / ${totalReviews} ${totalReviews === 1 ? 'review' : 'reviews'}`}
+              </div>
+            </div>
+            <CommunityVote movieId={parseInt(id)} initialVotes={communityVotes ?? []} compact />
+          </div>
+        </div>
       </div>
 
-      {/* ── MAIN CONTENT ──────────────────────────────────────────────────────── */}
-      <div className="max-w-[1140px] mx-auto px-4 sm:px-6 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8 lg:gap-12">
+      {/* ── Body ───────────────────────────────────────────────────────────── */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-12">
+        <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-x-12 gap-y-10">
 
-          {/* LEFT SIDEBAR — poster overlaps the backdrop via negative top margin */}
-          <aside className="flex flex-col gap-4 md:-mt-24 relative z-10">
-
-            {/* Poster */}
-            {tmdb.poster_path ? (
+          <aside className="flex flex-col gap-6">
+            {tmdb.poster_path && (
               <img
                 src={`https://image.tmdb.org/t/p/w500${tmdb.poster_path}`}
                 alt={tmdb.title}
-                className="w-full aspect-[2/3] object-cover rounded-xl shadow-2xl shadow-black/40"
+                className="w-40 md:w-full object-cover"
+                style={{ aspectRatio: '2/3', border: '1px solid #111' }}
               />
-            ) : (
-              <div className="w-full aspect-[2/3] rounded-xl bg-[#222222]" />
             )}
-
-            {/* YouTube score + community score side by side */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className={`rounded-xl p-4 text-center ${
-                recPct !== null
-                  ? tileClasses(recPct)
-                  : isPending ? 'bg-[#1E1E1E] border border-[#333] border-dashed' : 'bg-[#1E1E1E] border border-[#2A2A2A] border-t-2 border-t-[#E21D1D]'
-              }`}>
-                {/* Children inherit the tile's text colour — no explicit text-white needed */}
-                <div className={`text-3xl font-black leading-none ${recPct === null ? 'text-[#777777]' : ''}`}>
-                  {recPct !== null ? `${recPct}%` : isPending ? '?' : '?'}
-                </div>
-                <div className={`text-[8px] font-black uppercase tracking-widest mt-1 ${
-                  recPct !== null ? 'opacity-70' : isPending ? 'text-[#999999]' : 'text-[#777777]'
-                }`}>
-                  {isPending ? 'Pending' : 'YouTube'}
-                </div>
-                <div className={`text-[8px] font-bold mt-0.5 ${
-                  recPct !== null ? 'opacity-60' : 'text-[#777777]'
-                }`}>
-                  {isPending
-                    ? scoredReviews.length === 0
-                      ? `${totalReviews} unscored`
-                      : `${scoredReviews.length} of ${MIN_REVIEWS} scored`
-                    : `${totalReviews} ${totalReviews === 1 ? 'review' : 'reviews'}`}
-                </div>
-              </div>
-              <CommunityVote movieId={parseInt(id)} initialVotes={communityVotes ?? []} compact />
+            <div style={{ borderTop: '1px solid #111' }}>
+              {tmdb.cast?.length > 0 && <Detail label="Cast">{tmdb.cast.join(', ')}</Detail>}
+              {budget && <Detail label="Budget">{budget}</Detail>}
+              {revenue && <Detail label="Box office">{revenue}</Detail>}
+              {tmdb.studios?.length > 0 && <Detail label="Studio">{(tmdb.studios as string[]).join(' · ')}</Detail>}
             </div>
-
-            {/* Film details */}
-            <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 space-y-3">
-              {tmdb.director && (
-                <div>
-                  <p className="text-[9px] font-black text-[#777777] uppercase tracking-widest mb-0.5">Director</p>
-                  <p className="text-[13px] font-bold text-white">{tmdb.director}</p>
-                </div>
-              )}
-              {tmdb.cast?.length > 0 && (
-                <div>
-                  <p className="text-[9px] font-black text-[#777777] uppercase tracking-widest mb-0.5">Cast</p>
-                  <p className="text-[12px] text-[#AAAAAA] leading-relaxed">{tmdb.cast.join(', ')}</p>
-                </div>
-              )}
-              {releaseYear && (
-                <div className="flex gap-6">
-                  <div>
-                    <p className="text-[9px] font-black text-[#777777] uppercase tracking-widest mb-0.5">Released</p>
-                    <p className="text-[13px] font-bold text-white">{releaseYear}</p>
-                  </div>
-                  {tmdb.runtime > 0 && (
-                    <div>
-                      <p className="text-[9px] font-black text-[#777777] uppercase tracking-widest mb-0.5">Runtime</p>
-                      <p className="text-[13px] font-bold text-white">{tmdb.runtime} min</p>
-                    </div>
-                  )}
-                </div>
-              )}
-              {(budget || revenue) && (
-                <div className="flex gap-6">
-                  {budget && (
-                    <div>
-                      <p className="text-[9px] font-black text-[#777777] uppercase tracking-widest mb-0.5">Budget</p>
-                      <p className="text-[13px] font-bold text-white">{budget}</p>
-                    </div>
-                  )}
-                  {revenue && (
-                    <div>
-                      <p className="text-[9px] font-black text-[#777777] uppercase tracking-widest mb-0.5">Box Office</p>
-                      <p className="text-[13px] font-bold text-white">{revenue}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-              {tmdb.genres?.length > 0 && (
-                <div>
-                  <p className="text-[9px] font-black text-[#777777] uppercase tracking-widest mb-1">Genres</p>
-                  <div className="flex flex-wrap gap-1">
-                    {tmdb.genres.map((g: any) => (
-                      <span key={g.id} className="text-[10px] font-bold border border-[#333333] text-[#999999] px-2 py-0.5 rounded-full">{g.name}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {tmdb.studios?.length > 0 && (
-                <div>
-                  <p className="text-[9px] font-black text-[#777777] uppercase tracking-widest mb-0.5">Studio</p>
-                  <p className="text-[12px] text-[#888888]">{(tmdb.studios as string[]).join(' · ')}</p>
-                </div>
-              )}
-            </div>
-
           </aside>
 
-          {/* RIGHT: title → where to watch → synopsis → reviews */}
-          <main className="flex flex-col gap-6 min-w-0 pt-4 md:pt-6">
+          <main className="min-w-0 flex flex-col gap-10">
 
-            {/* Title — lives in the content column so it never fights the poster */}
-            <div>
-              <h1 className="text-4xl sm:text-5xl font-black tracking-tighter leading-[0.92] text-white uppercase italic mb-2">
-                {tmdb.title}
-              </h1>
-              {tmdb.director && (
-                <p className="text-sm font-bold text-[#999999] uppercase tracking-widest">
-                  Directed by {tmdb.director}{releaseYear && ` · ${releaseYear}`}
-                </p>
-              )}
-            </div>
+            {tmdb.overview && (
+              <p className="text-[19px] sm:text-[21px] leading-relaxed max-w-[62ch]" style={{ fontFamily: HEADLINE, color: '#222' }}>
+                {tmdb.overview}
+              </p>
+            )}
 
-            {/* Where to Watch — most actionable info after the title */}
             {tmdb.providers && (tmdb.providers.flatrate?.length || tmdb.providers.rent?.length || tmdb.providers.buy?.length) ? (
-              <div className="space-y-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#777777]">Where to Watch</p>
+              <div className="flex flex-col gap-3">
+                <p className="uppercase" style={{ fontFamily: DISPLAY, fontSize: '1.15rem', letterSpacing: '0.06em', color: '#111' }}>
+                  <span style={{ color: '#C8201F' }}>Where to watch</span>
+                </p>
 
-                {/* Streaming — full-colour branded pills */}
                 {tmdb.providers.flatrate?.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {(tmdb.providers.flatrate as any[]).map((p: any) => {
-                      const style = PLATFORM_STYLES[p.provider_id] ?? { name: p.provider_name, bg: '#2A2A2A', text: '#ccc' };
+                      const style = PLATFORM_STYLES[p.provider_id] ?? { name: p.provider_name, bg: '#2A2A2A', text: '#fff' };
                       return (
-                        <span
-                          key={p.provider_id}
-                          className="inline-flex items-center gap-1.5 text-[12px] font-black px-3.5 py-2 rounded-full leading-none"
-                          style={{ backgroundColor: style.bg, color: style.text }}
-                        >
-                          {/* Play icon */}
-                          <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current shrink-0" aria-hidden>
-                            <path d="M8 5v14l11-7z"/>
-                          </svg>
+                        <span key={p.provider_id} className="inline-flex items-center gap-1.5 text-[12px] font-bold px-3.5 py-2 leading-none" style={{ backgroundColor: style.bg, color: style.text }}>
+                          <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current shrink-0" aria-hidden><path d="M8 5v14l11-7z" /></svg>
                           Stream on {style.name}
                         </span>
                       );
@@ -313,55 +251,27 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
                   </div>
                 )}
 
-                {/* Rent / Buy — muted outlined pills */}
                 {(tmdb.providers.rent?.length || tmdb.providers.buy?.length) ? (
-                  <div className="flex flex-wrap gap-1.5 items-center">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-white/25 mr-1">Rent or buy:</span>
+                  <p className="text-[13px]" style={{ color: '#555' }}>
+                    <span className="font-bold" style={{ color: '#111' }}>Rent or buy:</span>{' '}
                     {((tmdb.providers.rent ?? tmdb.providers.buy ?? []) as any[])
                       .filter((p, i, arr) => arr.findIndex((x: any) => x.provider_id === p.provider_id) === i)
                       .slice(0, 6)
-                      .map((p: any) => {
-                        const name = (PLATFORM_STYLES[p.provider_id]?.name) ?? p.provider_name;
-                        return (
-                          <span
-                            key={p.provider_id}
-                            className="text-[10px] font-bold text-white/50 border border-white/[0.14] px-2.5 py-1 rounded-full"
-                          >
-                            {name}
-                          </span>
-                        );
-                      })
-                    }
-                  </div>
+                      .map((p: any) => PLATFORM_STYLES[p.provider_id]?.name ?? p.provider_name)
+                      .join(', ')}
+                  </p>
                 ) : null}
               </div>
             ) : null}
 
-            {tmdb.overview && (
-              <div className="text-base sm:text-lg font-medium leading-relaxed text-[#D4D4D4] border-l-4 border-[#E21D1D] pl-5 italic">
-                {tmdb.overview}
-              </div>
-            )}
-
-            {/* Reviews */}
-            <div className={`rounded-2xl overflow-hidden ${
-              totalReviews === 0
-                ? 'bg-[#1E1E1E]'
-                : 'bg-[#181818] border border-[#2A2A2A]'
-            }`}>
-              <div className="flex items-center gap-3 px-6 py-4 border-b border-[#2A2A2A]">
-                
-                <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">
-                  YouTube Reviews ({totalReviews})
-                </h3>
-              </div>
+            {/* ── Verdicts ─────────────────────────────────────────────────── */}
+            <section>
+              <SectionTitle title={`The verdicts (${totalReviews})`} />
 
               {totalReviews === 0 ? (
-                <p className="text-[#777777] font-bold text-sm py-10 text-center">
-                  No reviews synced yet
-                </p>
+                <p className="py-12 text-center text-[16px]" style={{ color: '#555' }}>No reviews synced yet.</p>
               ) : (
-                <div className="divide-y divide-[#2A2A2A]">
+                <div className="mt-8">
                   {reviews!.map((review) => {
                     const snippet = isUsefulSnippet(review.snippet) ? review.snippet : null;
                     const titleQuote = isOpinionatedTitle(review.title) ? review.title : null;
@@ -370,59 +280,34 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
                     const isPass = review.recommend === false;
 
                     return (
-                      <article key={review.id} className="px-6 py-5 flex gap-4">
-                        <AvatarImg
-                          src={review.creators?.avatar_url}
-                          name={review.creators?.name || 'C'}
-                          className="w-12 h-12 mt-0.5 shadow-sm"
-                        />
+                      <article key={review.id} className="flex gap-4 py-6" style={{ borderTop: '1px solid #E4E4E4' }}>
+                        <AvatarPlain src={review.creators?.avatar_url} name={review.creators?.name || 'C'} className="w-11 h-11 mt-0.5" />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-                            <span className="text-sm font-black text-white">{review.creators?.name}</span>
-                            {isRec && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-full bg-[#2BA640] text-white">
-                                <ThumbsUp size={11} strokeWidth={2.5} />
-                                Recommends
-                              </span>
-                            )}
-                            {isPass && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-full bg-[#E21D1D] text-white">
-                                <ThumbsDown size={11} strokeWidth={2.5} />
-                                Skip it
-                              </span>
-                            )}
-                            {review.recommend === null && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#333333] text-[#777777]">
-                                <Minus size={10} />
-                                Unscored
-                              </span>
-                            )}
+                          <div className="flex items-center gap-3 flex-wrap mb-2">
+                            <span style={{ fontFamily: HEADLINE, fontWeight: 700, fontSize: '1.2rem', lineHeight: 1.2, color: '#111' }}>
+                              {review.creators?.name}
+                            </span>
+                            {review.recommend !== null
+                              ? <TicketStub admit={isRec} />
+                              : <span className="uppercase" style={{ fontFamily: DISPLAY, fontSize: '1rem', letterSpacing: '0.06em', color: '#555' }}>Unscored</span>}
                           </div>
 
                           {displayText ? (
-                            <p className={`text-sm leading-relaxed mb-3 pl-3 line-clamp-3 ${
-                              snippet
-                                ? 'text-[#AAAAAA] border-l-2 border-[#E21D1D]/50'
-                                : 'text-[#999999] italic border-l-2 border-[#2A2A2A]'
-                            }`}>
-                              {snippet ? displayText : `"${displayText}"`}
+                            <p className="text-[16px] leading-relaxed line-clamp-3 max-w-[70ch] italic" style={{ fontFamily: HEADLINE, color: '#333' }}>
+                              &ldquo;{displayText}&rdquo;
                             </p>
                           ) : (
-                            <p className="text-xs text-[#777777] italic mb-3">
-                              Check out the full review on YouTube
-                            </p>
+                            <p className="text-[14px] italic" style={{ color: '#555' }}>Check out the full review on YouTube.</p>
                           )}
 
                           <a
                             href={`https://youtube.com/watch?v=${review.youtube_video_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#777777] hover:text-[#FF0000] transition-colors"
+                            className="inline-flex items-center gap-1.5 mt-3 uppercase hover:underline underline-offset-4"
+                            style={{ fontFamily: DISPLAY, fontSize: '1.05rem', letterSpacing: '0.06em', color: '#C8201F' }}
                           >
-                            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-[#FF0000]" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19C0 8.04 0 12 0 12s0 3.96.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14C24 15.96 24 12 24 12s0-3.96-.5-5.81zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/>
-                            </svg>
-                            Watch on YouTube <ArrowUpRight size={12} />
+                            Watch on YouTube <ArrowUpRight size={13} />
                           </a>
                         </div>
                       </article>
@@ -430,7 +315,7 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
                   })}
                 </div>
               )}
-            </div>
+            </section>
           </main>
         </div>
       </div>
