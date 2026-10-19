@@ -30,7 +30,7 @@ function Quote({ review, side }: { review: ReviewDigest; side: 'pro' | 'con' }) 
         &ldquo;{review.snippet}&rdquo;
       </p>
       <p className="mt-2 uppercase" style={{ fontFamily: 'var(--font-display), Impact, sans-serif', fontSize: '1.05rem', letterSpacing: '0.06em', color: '#111' }}>
-        {side === 'pro' ? 'Recommends' : 'Skips it'} <span style={{ color: '#C8201F' }}>/</span> {review.creatorName}
+        <span style={{ color: side === 'pro' ? '#16803A' : '#C8201F' }}>{side === 'pro' ? 'Recommends' : 'Skips it'}</span> / {review.creatorName}
       </p>
     </div>
   );
@@ -54,7 +54,7 @@ export async function LeadStoryBlock({ justIn }: { justIn: VerdictItem[] }) {
     <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
       {story && (
         <article className="group">
-          <Link href={href} className="block overflow-hidden" style={{ background: '#E8E8E8' }}>
+          <Link href={href} className="block overflow-hidden" style={{ background: '#E8E8E8', border: '1px solid #111' }}>
             <div className="relative" style={{ aspectRatio: '21/9' }}>
               {image && <img src={image} alt={story.movieTitle} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" />}
             </div>

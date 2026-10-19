@@ -15,14 +15,14 @@ export async function PosterRail() {
       <div className="grid grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mt-8">
         {films.map((f, i) => (
           <Link key={f.movieId} href={`/movie/${f.movieId}` as any} className="group block">
-            <div className="overflow-hidden " style={{ aspectRatio: '2/3', background: '#E8E8E8' }}>
+            <div className="overflow-hidden " style={{ aspectRatio: '2/3', background: '#E8E8E8', border: '1px solid #111' }}>
               {posters[i] && <img src={posters[i]!} alt={f.movieTitle} className="w-full h-full object-cover" />}
             </div>
             <p className="mt-2.5 line-clamp-1 group-hover:underline" style={{ fontFamily: 'var(--font-headline), Georgia, serif', fontWeight: 700, fontSize: '1.1rem', lineHeight: 1.2, color: '#111' }}>
               {f.movieTitle}
             </p>
             <p className="text-[12px] mt-0.5" style={{ color: '#555' }}>
-              <span className="font-bold" style={{ color: '#111' }}>{f.pctPositive}%</span>
+              <span className="font-bold" style={{ color: f.pctPositive >= 50 ? '#16803A' : '#C8201F' }}>{f.pctPositive}%</span>
               {' '}· {f.reviewCount} reviews
             </p>
           </Link>
