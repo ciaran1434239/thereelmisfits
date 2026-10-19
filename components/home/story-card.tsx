@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Check, X } from 'lucide-react';
+import { TicketStub } from '@/components/ui/ticket-stub';
 
 const HEADLINE = 'var(--font-headline), Georgia, serif';
 
@@ -22,12 +22,7 @@ export function StoryCard({ href, image, imageHref, title, label, meta, quote, p
     <div className="relative overflow-hidden" style={{ aspectRatio: '16/9', background: '#E8E8E8' }}>
       {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />}
       {imageHref && verdict !== undefined && (
-        <span
-          className="absolute bottom-3 left-3 w-11 h-11 flex items-center justify-center text-white -rotate-6 transition-transform group-hover:rotate-0 group-hover:scale-110"
-          style={{ background: verdict ? '#1E8E3E' : '#C8201F', border: '3px solid #fff', boxShadow: '0 3px 10px rgba(0,0,0,0.45)' }}
-        >
-          {verdict ? <Check size={24} strokeWidth={4} /> : <X size={24} strokeWidth={4} />}
-        </span>
+        <span className="absolute bottom-3 left-3"><TicketStub admit={verdict} className="transition-transform group-hover:rotate-0 group-hover:scale-105" /></span>
       )}
       {poster && (
         <img src={poster} alt="" className="absolute bottom-3 right-3 w-[54px] object-cover" style={{ aspectRatio: '2/3', border: '3px solid #fff', boxShadow: '0 3px 10px rgba(0,0,0,0.4)' }} />
