@@ -18,18 +18,18 @@ export function quoteOf(item: VerdictItem, max = 160): string | null {
 
 export function VerdictCard({ item, poster, size = 'md' }: { item: VerdictItem; poster: string | null; size?: 'lg' | 'md' }) {
   const many = item.criticCount > 1;
-  const pct = Math.round((item.recCount / item.criticCount) * 100);
-  const good = many ? pct >= 50 : item.recommend;
+  const showPct = item.scoredCount >= 4;
+  const pct = item.scoredCount ? Math.round((item.recCount / item.scoredCount) * 100) : 0;
+  const good = showPct ? pct >= 50 : item.recommend;
   return (
     <StoryCard
       size={size}
       href={`/movie/${item.movieId}`}
       image={item.youtubeVideoId ? `https://i.ytimg.com/vi/${item.youtubeVideoId}/${size === 'lg' ? 'hqdefault' : 'mqdefault'}.jpg` : null}
-      imageHref={item.youtubeVideoId ? `https://youtube.com/watch?v=${item.youtubeVideoId}` : undefined}
       title={item.movieTitle}
       quote={quoteOf(item, size === 'lg' ? 200 : 140)}
-      label={many ? `${pct}% recommend` : item.recommend ? 'Recommends' : 'Skips it'}
-      meta={many ? `${item.criticCount} critics · Latest: ${item.creatorName}` : `${item.creatorName} · ${formatDate(item.postedAt)}`}
+      label={showPct ? `${pct}% recommend` : item.recommend ? 'Recommends' : 'Skips it'}
+      meta={many ? `${item.criticCount} reviews · latest from ${item.creatorName}` : `${item.creatorName} · ${formatDate(item.postedAt)}`}
       poster={poster}
       verdict={good}
     />

@@ -15,6 +15,7 @@ export interface VerdictItem {
   creatorHandle: string | null;
   creatorAvatarUrl: string | null;
   criticCount: number;
+  scoredCount: number;
   recCount: number;
 }
 
@@ -39,9 +40,30 @@ export async function getVerdictsFeed(
     const since = days ? new Date(Date.now() - days * 86_400_000).toISOString() : null;
     const rows = await fetchVerdicts(since, filter, 400);
     const items = groupByMovie(rows).filter(v => !excludeMovieIds.includes(v.movieId));
-    if (items.length >= Math.min(limit, 12) || days === null) return items.slice(0, limit);
+    if (items.length >= Math.min(limit, 12) || days === null) return withTotals(items.slice(0, limit));
   }
   return [];
+}
+
+// Counts every review of each film (including unscored ones) so cards match the movie page.
+async function withTotals(items: VerdictItem[]): Promise<VerdictItem[]> {
+  if (!items.length) return items;
+  const { data } = await supabase
+    .from('reviews')
+    .select('movie_id, recommend')
+    .in('movie_id', items.map(i => i.movieId));
+
+  const totals = new Map<number, { all: number; scored: number; rec: number }>();
+  for (const r of data ?? []) {
+    const t = totals.get(r.movie_id) ?? { all: 0, scored: 0, rec: 0 };
+    t.all += 1;
+    if (r.recommend !== null) { t.scored += 1; if (r.recommend) t.rec += 1; }
+    totals.set(r.movie_id, t);
+  }
+  return items.map(i => {
+    const t = totals.get(i.movieId);
+    return t ? { ...i, criticCount: t.all, scoredCount: t.scored, recCount: t.rec } : i;
+  });
 }
 
 function groupByMovie(rows: VerdictItem[]): VerdictItem[] {
@@ -50,9 +72,10 @@ function groupByMovie(rows: VerdictItem[]): VerdictItem[] {
     const g = byMovie.get(r.movieId);
     if (g) {
       g.criticCount += 1;
+      g.scoredCount += 1;
       g.recCount += r.recommend ? 1 : 0;
     } else {
-      byMovie.set(r.movieId, { ...r, criticCount: 1, recCount: r.recommend ? 1 : 0 });
+      byMovie.set(r.movieId, { ...r, criticCount: 1, scoredCount: 1, recCount: r.recommend ? 1 : 0 });
     }
   }
   return [...byMovie.values()];
@@ -96,6 +119,7 @@ function mapRow(r: any): VerdictItem {
     creatorHandle:   creator?.handle ?? null,
     creatorAvatarUrl:creator?.avatar_url ?? null,
     criticCount:     1,
+    scoredCount:     1,
     recCount:        r.recommend ? 1 : 0,
   };
 }
