@@ -30,9 +30,9 @@ export function StoryCard({ href, image, title, label, meta, quote, poster, verd
   );
 
   return (
-    <article className="group flex flex-col gap-4">
+    <article className="group flex flex-col gap-4 h-full">
       <Link href={href}>{img}</Link>
-      <div className="flex flex-col">
+      <div className="flex flex-col flex-1">
         <Link href={href}>
           <h3
             className="group-hover:underline decoration-1 underline-offset-4"
@@ -41,12 +41,14 @@ export function StoryCard({ href, image, title, label, meta, quote, poster, verd
             {title}
           </h3>
         </Link>
-        {quote && (
-          <p className={`mt-3 italic leading-relaxed ${lg ? 'text-[17px] line-clamp-3' : 'text-[15px] line-clamp-3'}`} style={{ fontFamily: HEADLINE, fontWeight: 400, color: '#333' }}>
-            &ldquo;{quote}&rdquo;
-          </p>
-        )}
-        <p className="mt-4 uppercase" style={{ fontFamily: 'var(--font-display), Impact, sans-serif', fontSize: '1.05rem', letterSpacing: '0.06em', lineHeight: 1.1, color: verdict === undefined ? '#111' : verdict ? '#16803A' : '#C8201F' }}>
+        <div className={`mt-3 ${lg ? '' : 'min-h-[3.1rem]'}`}>
+          {quote && (
+            <p className={`italic leading-relaxed ${lg ? 'text-[17px] line-clamp-3' : 'text-[15px] line-clamp-2'}`} style={{ fontFamily: HEADLINE, fontWeight: 400, color: '#333' }}>
+              &ldquo;{quote}&rdquo;
+            </p>
+          )}
+        </div>
+        <p className="mt-auto pt-4 uppercase" style={{ fontFamily: 'var(--font-display), Impact, sans-serif', fontSize: '1.05rem', letterSpacing: '0.06em', lineHeight: 1.1, color: verdict === undefined ? '#111' : verdict ? '#16803A' : '#C8201F' }}>
           {label}
         </p>
         {meta && <p className="mt-1 text-[13px]" style={{ color: '#666' }}>{meta}</p>}

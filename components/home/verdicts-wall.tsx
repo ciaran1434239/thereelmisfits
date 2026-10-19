@@ -17,10 +17,8 @@ export function quoteOf(item: VerdictItem, max = 160): string | null {
 }
 
 export function VerdictCard({ item, poster, size = 'md' }: { item: VerdictItem; poster: string | null; size?: 'lg' | 'md' }) {
-  const many = item.criticCount > 1;
-  const showPct = item.scoredCount >= 4;
-  const pct = item.scoredCount ? Math.round((item.recCount / item.scoredCount) * 100) : 0;
-  const good = showPct ? pct >= 50 : item.recommend;
+  // One rule for every card: the label is the consensus verdict, the grey line is who + how many.
+  const good = item.scoredCount ? item.recCount / item.scoredCount >= 0.5 : item.recommend;
   return (
     <StoryCard
       size={size}
@@ -28,8 +26,8 @@ export function VerdictCard({ item, poster, size = 'md' }: { item: VerdictItem; 
       image={item.youtubeVideoId ? `https://i.ytimg.com/vi/${item.youtubeVideoId}/${size === 'lg' ? 'hqdefault' : 'mqdefault'}.jpg` : null}
       title={item.movieTitle}
       quote={quoteOf(item, size === 'lg' ? 200 : 140)}
-      label={showPct ? `${pct}% recommend` : item.recommend ? 'Recommends' : 'Skips it'}
-      meta={many ? `${item.criticCount} reviews · latest from ${item.creatorName}` : `${item.creatorName} · ${formatDate(item.postedAt)}`}
+      label={good ? 'Recommends' : 'Skips it'}
+      meta={`${item.creatorName} · ${item.criticCount} ${item.criticCount === 1 ? 'review' : 'reviews'}`}
       poster={poster}
       verdict={good}
     />
@@ -45,6 +43,9 @@ export async function VerdictsWall({ items }: { items: VerdictItem[] }) {
       </div>
     );
   }
+
+  // Always fill complete rows of three.
+  if (items.length >= 3) items = items.slice(0, Math.floor(items.length / 3) * 3);
 
   const ids = [...new Set(items.map(v => v.movieId))];
   const posters = new Map(await Promise.all(ids.map(async id => [id, await fetchPoster(id)] as const)));
